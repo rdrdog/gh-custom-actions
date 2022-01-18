@@ -6,29 +6,10 @@ inputs:
     description: "Name of the main branch. Defaults to 'main'."
     required: false
     default: main
-#   registry_host:
-#     description: "Image registry host e.g. myacr.azureacr.io"
-#     required: true
-#   registry_endpoint:
-#     description: "Image registry repo e.g. myacr.azureacr.io/eshop"
-#     required: true
-#   image_name:
-#     description: "Name of image"
-#     required: true
-#   registry_username:
-#     description: "Registry username"
-#     required: true
-#   registry_password:
-#     description: "Registry password"
-#     required: true
 
 runs:
   using: "composite"
   steps:
-  - name: Get the branch name
-    # Sets the GIT_BRANCH_NAME env var
-    uses: EthanSK/git-branch-name-action@v1
-
 
   - name: Set git state as env vars
     shell: bash
@@ -36,18 +17,28 @@ runs:
       commitSha=$(git rev-parse HEAD)
       echo "GIT_COMMIT_SHA=$commitSha" >> $GITHUB_ENV
 
-      mainBranchForkPoint=$(git merge-base --octopus remotes/origin/${{ inputs.main_branch_name }} HEAD)
+      # Get branch name
+      branchName=$GITHUB_HEAD_REF
+      if [[ "$branchName" == "" ]]; then
+        branchName=${GITHUB_REF#refs/heads/}
+      fi
+
+      # Get main branch fork point
+      if [[ "$ACT" == "true" ]]; then
+        mainBranchPath=${{ inputs.main_branch_name }}
+      else
+        mainBranchPath=remotes/origin/${{ inputs.main_branch_name }}
+      fi
+      mainBranchForkPoint=$(git merge-base --octopus $mainBranchPath HEAD)
       echo "GIT_MAIN_BRANCH_FORK_POINT=$mainBranchForkPoint" >> $GITHUB_ENV
 
-      echo "Commit sha: $commitSha"
-      echo "Main branch fork sha: $mainBranchForkPoint"
+      # Get changes on this branch:
+      if [[ "$commitSha" != "" && "$mainBranchForkPoint" != "" ]]; then
+        fileChangesInBranch=$(git --no-pager diff --name-only $commitSha:./)
+        echo "GIT_DIFF_LIST=$fileChangesInBranch" >> $GITHUB_ENV
+      fi
 
-      # TODO:
-      # if len(result.CommitSha) > 0 && len(result.MainBranchForkPoint) > 0 {
-      # 		result.ChangesSinceMainBranch, err = g.getChangesBetweenCommits(result.MainBranchForkPoint, result.CommitSha)
-      # 		if err != nil {
-      # 			g.logger.WithField("error", err).Warn("Error getting diff list")
-      # 		} else {
-      # 			g.logger.Debugf("Diff for branch: %s", result.ChangesSinceMainBranch)
-      # 		}
-      # 	}
+      echo "Commit sha: $commitSha"
+      echo "Branch name: $branchName"
+      echo "Main branch fork sha: $mainBranchForkPoint"
+      echo "Diff for branch: $fileChangesInBranch"

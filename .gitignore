@@ -1,0 +1,23 @@
+**/.vs
+**/.vscode
+**/.DS_Store
+**/.idea
+
+secrets
+**/node_modules
+
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, build with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+build-artefacts
+samples/examples

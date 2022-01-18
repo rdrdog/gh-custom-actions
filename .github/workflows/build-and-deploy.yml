@@ -15,10 +15,12 @@ jobs:
   initialise:
     runs-on: ubuntu-latest
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
     - name: initialise pipeline state
       uses: ./.github/workflows/composite/intialise
       with:
-        arg1: abc123
+        main_branch_name: main
 
   # build:
   #   uses: mmcgroup/pipelines/.github/workflows/build.yml@main
