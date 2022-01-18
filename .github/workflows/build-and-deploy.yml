@@ -1,0 +1,29 @@
+name: Build and deploy
+concurrency:
+  group: ${{ github.ref_name }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  initialise:
+    runs-on: ubuntu-latest
+    steps:
+    - name: initialise pipeline state
+      uses: ./.github/workflows/composite/intialise
+      with:
+        arg1: abc123
+
+  # build:
+  #   uses: mmcgroup/pipelines/.github/workflows/build.yml@main
+  #   with:
+  #     verbose: true
+  #   secrets:
+  #     azureCredentials: ${{ secrets.AZURE_CREDENTIAL_DEV }}
+  #     gitCloneToken: ${{ secrets.GIT_CLONE_TOKEN }}

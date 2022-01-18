@@ -1,0 +1,53 @@
+name: "Initialises pipeline state"
+description: "Reads state from git, and sets up env vars"
+
+inputs:
+  main_branch_name:
+    description: "Name of the main branch. Defaults to 'main'."
+    required: false
+    default: main
+#   registry_host:
+#     description: "Image registry host e.g. myacr.azureacr.io"
+#     required: true
+#   registry_endpoint:
+#     description: "Image registry repo e.g. myacr.azureacr.io/eshop"
+#     required: true
+#   image_name:
+#     description: "Name of image"
+#     required: true
+#   registry_username:
+#     description: "Registry username"
+#     required: true
+#   registry_password:
+#     description: "Registry password"
+#     required: true
+
+runs:
+  using: "composite"
+  steps:
+  - name: Get the branch name
+    # Sets the GIT_BRANCH_NAME env var
+    uses: EthanSK/git-branch-name-action@v1
+
+
+  - name: Set git state as env vars
+    shell: bash
+    run: |
+      commitSha=$(git rev-parse HEAD)
+      echo "GIT_COMMIT_SHA=$commitSha" >> $GITHUB_ENV
+
+      mainBranchForkPoint=$(git merge-base --octopus remotes/origin/${{ inputs.main_branch_name }} HEAD)
+      echo "GIT_MAIN_BRANCH_FORK_POINT=$mainBranchForkPoint" >> $GITHUB_ENV
+
+      echo "Commit sha: $commitSha"
+      echo "Main branch fork sha: $mainBranchForkPoint"
+
+      # TODO:
+      # if len(result.CommitSha) > 0 && len(result.MainBranchForkPoint) > 0 {
+      # 		result.ChangesSinceMainBranch, err = g.getChangesBetweenCommits(result.MainBranchForkPoint, result.CommitSha)
+      # 		if err != nil {
+      # 			g.logger.WithField("error", err).Warn("Error getting diff list")
+      # 		} else {
+      # 			g.logger.Debugf("Diff for branch: %s", result.ChangesSinceMainBranch)
+      # 		}
+      # 	}
