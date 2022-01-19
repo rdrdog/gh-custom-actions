@@ -2,12 +2,20 @@ name: "Docker run"
 description: "Runs a container image"
 
 inputs:
-  image_name:
-    description: "The name of the image to run"
+  image_names:
+    description: "A comma delimited list of image names to deploy to kubernetes"
     required: true
   environment:
     description: "The name of the environment to run against"
     required: true
+  secretKeys:
+    description: "A comma delimited list of secret keys to load from the secret manager"
+    required: false
+    default: ""
+  secretEnvValues:
+    description: "A comma delimited list of environment variable names to load the secret values into"
+    required: false
+    default: ""
 
 runs:
   using: "composite"
@@ -27,8 +35,10 @@ runs:
       name: manifest_images
       path: manifest_images
 
-  - name: Run docker image
+  - name: helm deploy
     shell: bash
     run: |
-      image=$(cat manifest_images/${{ inputs.image_name }})
-      echo "docker run -e ENVIRONMENT=${{ inputs.environment }} $image"
+      printf ${{ inputs.image_names }} | tr "," "\n" | while read image
+      do
+        cat manifest_images/$image
+      done
