@@ -1,0 +1,36 @@
+name: "Docker run"
+description: "Runs a container image"
+
+inputs:
+  image_name:
+    description: "The name of the image to run"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+  - name: Hello world
+    shell: bash
+    run: |
+      echo "hello world"
+      echo "imageName: manifest_images_${{ inputs.image_name }}"
+
+  - name: fetch git state
+    uses: actions/download-artifact@v2
+    with:
+      name: manifest_git_state
+
+  - name: load git state
+    shell: bash
+    run: |
+      sed "" manifest_git_state >> $GITHUB_ENV
+
+  - uses: actions/download-artifact@v2
+    with:
+      name: manifest_images
+      path: manifest_images
+
+  - name: Display structure of downloaded files
+    shell: bash
+    run: |
+      ls -la manifest_images

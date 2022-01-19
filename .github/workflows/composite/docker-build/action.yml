@@ -1,0 +1,103 @@
+name: "Docker build"
+description: "Builds a container image. If the build is on a branch, and no changes have affected this container, then the previously built image on the main branch will be set in the output manifest."
+
+inputs:
+  image_name:
+    description: "The name of the image to build e.g. cool-api"
+    required: true
+
+  dockerfile:
+    description: "The path to the dockerfile in the core repository"
+    required: true
+
+  includes:
+    description: "A semicolon delimited list of glob patterns of paths. If the git diff indiciates any files on these paths have changed, the container will be built."
+    required: true
+
+  registry:
+    description: "The URL of the container registry"
+    required: false
+    default: "ecr.todo.example.org"
+
+runs:
+  using: "composite"
+  steps:
+  - name: fetch git state
+    uses: actions/download-artifact@v2
+    with:
+      name: manifest_git_state
+
+  - name: load git state
+    shell: bash
+    run: |
+      sed "" manifest_git_state >> $GITHUB_ENV
+
+  - name: sanitise inputs
+    id: sanitisedInputs
+    shell: bash
+    run: |
+      # set the container registry to have a trailing slash, unless it is empty
+      registry="${{ inputs.registry }}"
+      if [[ "$registry" != "" && "$registry" != */ ]]; then
+        registry="$registry/"
+      fi
+      if [[ "$ACT" == "true" ]]; then
+        # no registry for local builds
+        registry=""
+      fi
+
+      fqImageName=${registry}${STACK_NAME}/${{ inputs.image_name }}
+
+      # Define image tag
+      imageTag=${GIT_COMMIT_SHA:0:7}
+      if [[ "$ACT" == "true" ]]; then
+        # add date time to image tag for local builds
+        imageTag="$imageTag-$(date +"%y%m%d%H%M%S")"
+      fi
+
+      echo "::set-output name=FQ_IMAGE_NAME::$fqImageName"
+      echo "::set-output name=IMAGE_TAG::$imageTag"
+
+  - name: determine if container should be build
+    id: shouldBuild
+    shell: bash
+    run: |
+      echo "::set-output name=SHOULD_BUILD::false"
+
+
+  - name: pull latest image for cache
+    if: ${{ steps.shouldBuild.outputs.SHOULD_BUILD == 'true' }}
+    shell: bash
+    run: |
+      # docker pull
+      echo "TODO: pull latest image for cache"
+
+  - name: docker build
+    if: ${{ steps.shouldBuild.outputs.SHOULD_BUILD == 'true' }}
+    shell: bash
+    run: |
+      # docker build ...
+      echo "todo - docker build"
+
+  - name: push images
+    if: ${{ steps.shouldBuild.outputs.SHOULD_BUILD == 'true' }}
+    shell: bash
+    run: |
+      # docker push
+      echo "todo - docker push"
+
+  - name: fetch manifest images
+    uses: actions/download-artifact@v2
+    with:
+      name: manifest_images
+      path: manifest_images
+
+  - name: store image name and tag in manifest
+    shell: bash
+    run: |
+      echo "${{ steps.sanitisedInputs.outputs.FQ_IMAGE_NAME }}:${{ steps.sanitisedInputs.outputs.IMAGE_TAG }}" > manifest_images/${{ inputs.image_name }}
+
+  - uses: actions/upload-artifact@v2
+    with:
+      name: manifest_images
+      path: manifest_images/**
