@@ -1,5 +1,5 @@
 # Custom github actions
-
+[![Action unit tests](https://github.com/rdrdog/gh-custom-actions/actions/workflows/validate-actions.yml/badge.svg)](https://github.com/rdrdog/gh-custom-actions/actions/workflows/validate-actions.yml)
 
 # Local usage
 > Because the released version of ACT doesn't yet support custom actions inside actions, we need to build ACT from source.
