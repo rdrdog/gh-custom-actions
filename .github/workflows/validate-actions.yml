@@ -1,6 +1,6 @@
 name: Validate actions
 concurrency:
-  group: ${{ github.ref_name }}
+  group: validate-actions-${{ github.ref_name }}
   cancel-in-progress: true
 
 on:
