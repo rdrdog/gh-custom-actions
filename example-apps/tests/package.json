@@ -1,0 +1,26 @@
+{
+  "name": "tests",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {
+    "@cucumber/cucumber": "^7.3.1",
+    "@cucumber/pretty-formatter": "^1.0.0-alpha.1",
+    "@types/chai": "^4.2.21",
+    "@types/node": "^16.4.13",
+    "@types/node-fetch": "^2.5.12",
+    "chai": "^4.3.4",
+    "cross-env": "^7.0.3",
+    "node-fetch": "^2.6.1",
+    "ts-node": "^10.2.0",
+    "typescript": "^4.3.5"
+  },
+  "scripts": {
+    "test": "npm run compile && ENVIRONMENT_NAME=local npm run test:env",
+    "test:env": "cross-env-shell npx cucumber-js features/**/*.feature --profile ${ENVIRONMENT_NAME}",
+    "compile": "npx tsc"
+  },
+  "author": "",
+  "license": "ISC"
+}
