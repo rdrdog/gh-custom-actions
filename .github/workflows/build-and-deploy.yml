@@ -21,13 +21,11 @@ jobs:
   initialise:
     runs-on: ubuntu-latest
     steps:
-    # TODO - this isn't required once the actions are published
-    # ---------------------------------------------------------
     - name: Checkout code
       uses: actions/checkout@v2
       with:
         fetch-depth: 0 # This ensures we can get the main branch fork point for PRs
-    # ---------------------------------------------------------
+
     - name: initialise pipeline state
       uses: ./actions/initialise
       with:

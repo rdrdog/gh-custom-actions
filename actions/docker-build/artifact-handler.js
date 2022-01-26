@@ -67,30 +67,10 @@ module.exports = {
   },
 
   storeImageNameAndTagAsync: async (fqImageName, imageTag) => {
-    //await downloadArtifactAsync(constants.manifestImagesKey);
-    //const imageTagFile = path.join(constants.manifestImagesKey, core.getInput(constants.inputImageName));
     const imageTagFile = core.getInput(constants.inputImageName);
     await fs.promises.writeFile(imageTagFile, `${fqImageName}:${imageTag}`)
 
     await uploadArtifactAsync(constants.manifestImagesKey, imageTagFile);
   }
-
-  /*
-#   - name: fetch manifest images
-#     uses: actions/download-artifact@v2
-#     with:
-#       name: manifest_images
-#       path: manifest_images
-
-#   - name: store image name and tag in manifest
-#     shell: bash
-#     run: |
-#       echo "${{ steps.sanitisedInputs.outputs.FQ_IMAGE_NAME }}:${{ steps.sanitisedInputs.outputs.IMAGE_TAG }}" > manifest_images/${{ inputs.image_name }}
-
-#   - uses: actions/upload-artifact@v2
-#     with:
-#       name: manifest_images
-#       path: manifest_images/**
-  */
 
 };

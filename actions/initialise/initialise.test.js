@@ -41,33 +41,19 @@ describe('initialise', () => {
   it('writes the git state to file', async () => {
     await runAsync();
 
+    expect(fs.promises.writeFile).toHaveBeenCalledTimes(1);
     expect(fs.promises.writeFile.mock.calls[0][0]).toBe('manifest_git_state');
     const writtenState = JSON.parse(fs.promises.writeFile.mock.calls[0][1]);
     expect(writtenState).toStrictEqual(gitState);
   });
 
-  it('writes the manifest images dir and keep file', async () => {
-    await runAsync();
-
-    expect(fs.promises.mkdir).toHaveBeenCalledWith('manifest_images', { recursive: true });
-    expect(fs.promises.writeFile).toHaveBeenCalledWith('manifest_images/.keep', '');
-  });
-
   it('uploads the git state as an artifact', async () => {
     await runAsync();
 
+    expect(uploader.uploadArtifactAsync).toHaveBeenCalledTimes(1);
     expect(uploader.uploadArtifactAsync).toHaveBeenCalledWith(
       'manifest_git_state',
       'manifest_git_state'
-    );
-  });
-
-  it('uploads the manifest folder as an artifact', async () => {
-    await runAsync();
-
-    expect(uploader.uploadArtifactAsync).toHaveBeenCalledWith(
-      'manifest_images',
-      'manifest_images/.keep'
     );
   });
 
