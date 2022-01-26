@@ -1,11 +1,9 @@
 const fs = require('fs');
-const path = require('path');
 const core = require('@actions/core');
 const git = require('./git');
 const uploader = require('./uploader');
 
 const manifestGitStateKey = "manifest_git_state";
-const manifestImagesKey = "manifest_images";
 
 const runAsync = async () => {
   try {

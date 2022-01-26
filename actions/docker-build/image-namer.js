@@ -1,9 +1,10 @@
 const core = require('@actions/core');
+const constants = require('./constants');
 
 module.exports = {
 
-  loadFqImageName: () => {
-    let registry = core.getInput('registry').trim();
+  loadFqImageName: (imageName) => {
+    let registry = core.getInput(constants.inputRegistry).trim();
       // set the container registry to have a trailing slash, unless it is empty
       if (registry != '' && !registry.endsWith('/')) {
         registry += '/';
@@ -13,7 +14,7 @@ module.exports = {
         registry = '';
       }
 
-      return `${registry}${process.env.STACK_NAME}/${core.getInput('image_name')}`;
+      return `${registry}${process.env.STACK_NAME}/${imageName}`;
   },
 
   generateImageTag: (gitState) => {

@@ -2390,6 +2390,7 @@ var require_git = __commonJS({
         };
         gitState.commitSha = await getCommitShaAsync();
         gitState.branchName = getBranchName();
+        gitState.buildNumber = process.env.GITHUB_RUN_ID;
         gitState.mainBranchForkPoint = await getMainBranchForkPointAsync();
         gitState.fileChangesInBranch = await getFileChangesInBranchAsync(gitState.mainBranchForkPoint, gitState.commitSha);
         return gitState;
@@ -6954,7 +6955,6 @@ var require_uploader = __commonJS({
 var require_initialise = __commonJS({
   "initialise.js"(exports, module2) {
     var fs = require("fs");
-    var path = require("path");
     var core = require_core();
     var git = require_git();
     var uploader = require_uploader();

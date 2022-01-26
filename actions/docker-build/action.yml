@@ -7,11 +7,15 @@ inputs:
     required: true
 
   dockerfile:
-    description: "The path to the dockerfile in the core repository"
+    description: "The path to the dockerfile in the repository"
     required: true
 
+  context:
+    description: "The path to the build context when building the dockerfile. If not specified, defaults to the dockerfile folder."
+    required: false
+
   includes:
-    description: "A semicolon delimited list of glob patterns of paths. If the git diff indiciates any files on these paths have changed, the container will be built."
+    description: "A semicolon delimited list of glob patterns of paths. If the git diff for the current branch indicates any files on these paths have changed, the container will be built."
     required: true
 
   registry:

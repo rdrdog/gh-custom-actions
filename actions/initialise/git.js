@@ -54,6 +54,7 @@ module.exports = {
 
     gitState.commitSha = await getCommitShaAsync();
     gitState.branchName = getBranchName();
+    gitState.buildNumber = process.env.GITHUB_RUN_ID
     gitState.mainBranchForkPoint = await getMainBranchForkPointAsync();
     gitState.fileChangesInBranch = await getFileChangesInBranchAsync(gitState.mainBranchForkPoint, gitState.commitSha);
 

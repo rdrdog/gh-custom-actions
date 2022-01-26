@@ -59,6 +59,7 @@ module.exports = {
     // {
     //   commitSha: '',
     //   branchName: '',
+    //   buildNumber: '',
     //   mainBranchForkPoint: '',
     //   fileChangesInBranch: []
     // };
@@ -66,11 +67,10 @@ module.exports = {
     return JSON.parse(fileContents);
   },
 
-  storeImageNameAndTagAsync: async (fqImageName, imageTag) => {
-    const imageTagFile = core.getInput(constants.inputImageName);
-    await fs.promises.writeFile(imageTagFile, `${fqImageName}:${imageTag}`)
+  storeImageNameAndTagAsync: async (imageName, fqImageName, imageTag) => {
+    await fs.promises.writeFile(imageName, `${fqImageName}:${imageTag}`)
 
-    await uploadArtifactAsync(constants.manifestImagesKey, imageTagFile);
+    await uploadArtifactAsync(constants.manifestImagesKey, imageName);
   }
 
 };
