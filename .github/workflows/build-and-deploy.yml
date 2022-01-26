@@ -25,6 +25,8 @@ jobs:
     # ---------------------------------------------------------
     - name: Checkout code
       uses: actions/checkout@v2
+      with:
+        fetch-depth: 0 # This ensures we can get the main branch fork point for PRs
     # ---------------------------------------------------------
     - name: initialise pipeline state
       uses: ./actions/initialise
@@ -96,38 +98,38 @@ jobs:
   #   with:
   #     environment: prod
 
-  deploy-local:
-    runs-on: ubuntu-latest
-    needs: build
-    if: ${{ github.actor == 'nektos/act' }} # run if we're using act locally
-    steps:
+  # deploy-local:
+  #   runs-on: ubuntu-latest
+  #   needs: build
+  #   if: ${{ github.actor == 'nektos/act' }} # run if we're using act locally
+  #   steps:
 
-    # TODO - this isn't required once the actions are published
-    # ---------------------------------------------------------
-    - name: Checkout code
-      uses: actions/checkout@v2
-    # ---------------------------------------------------------
+  #   # TODO - this isn't required once the actions are published
+  #   # ---------------------------------------------------------
+  #   - name: Checkout code
+  #     uses: actions/checkout@v2
+  #   # ---------------------------------------------------------
 
-    - name: run infra
-      uses: ./.github/workflows/composite/docker-run
-      with:
-        image_name: infra
-        environment: local
+  #   - name: run infra
+  #     uses: ./.github/workflows/composite/docker-run
+  #     with:
+  #       image_name: infra
+  #       environment: local
 
-    - name: deploy to k8s
-      uses: ./.github/workflows/composite/k8s-deploy
-      with:
-        #image_names: api,kafka-consumer,kafka-producer
-        image_names: api
-        environment: local
-        secretKeys: spn-pass,api-key
-        secretEnvValues: SPN_PASS,API_KEY
+  #   - name: deploy to k8s
+  #     uses: ./.github/workflows/composite/k8s-deploy
+  #     with:
+  #       #image_names: api,kafka-consumer,kafka-producer
+  #       image_names: api
+  #       environment: local
+  #       secretKeys: spn-pass,api-key
+  #       secretEnvValues: SPN_PASS,API_KEY
 
-    - name: run tests
-      uses: ./.github/workflows/composite/docker-run
-      with:
-        image_name: tests
-        environment: local
+  #   - name: run tests
+  #     uses: ./.github/workflows/composite/docker-run
+  #     with:
+  #       image_name: tests
+  #       environment: local
 
 
   # deploy-dev:
