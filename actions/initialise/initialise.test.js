@@ -1,11 +1,11 @@
-const artifact = require('@actions/artifact');
 const core = require('@actions/core');
-const git = require('./git');
 const fs = require('fs');
+const git = require('./git');
+const uploader = require('./uploader');
 
-jest.mock('@actions/artifact');
 jest.mock('@actions/core');
 jest.mock('./git');
+jest.mock('./uploader');
 
 jest.mock('fs', () => {
   const originalModule = jest.requireActual('fs');
@@ -15,25 +15,22 @@ jest.mock('fs', () => {
     __esModule: true,
     ...originalModule,
     promises: {
-      writeFile: jest.fn(),
+      mkdir: jest.fn(),
       readFile: jest.fn(),
+      writeFile: jest.fn(),
     }
   };
 });
 
 const { runAsync } = require('./initialise');
-const { expect } = require('@jest/globals');
 
 describe('initialise', () => {
   const gitState = { branchName: 'main' };
-  const mockArtifactClient = {
-    uploadArtifact: jest.fn()
-  };
 
   beforeEach(() => {
     jest.resetAllMocks();
     git.generateGitStateAsync.mockResolvedValue(gitState);
-    artifact.create.mockReturnValue(mockArtifactClient);
+    uploader.uploadArtifactAsync.mockResolvedValue(true);
   })
 
   it('fetches the git state', async () => {
@@ -44,31 +41,39 @@ describe('initialise', () => {
   it('writes the git state to file', async () => {
     await runAsync();
 
-    expect(fs.promises.writeFile).toHaveBeenCalledTimes(1);
     expect(fs.promises.writeFile.mock.calls[0][0]).toBe('manifest_git_state');
     const writtenState = JSON.parse(fs.promises.writeFile.mock.calls[0][1]);
     expect(writtenState).toStrictEqual(gitState);
   });
 
-  it('publishes the git state as an artifact', async () => {
+  it('writes the manifest images dir and keep file', async () => {
     await runAsync();
 
-    expect(mockArtifactClient.uploadArtifact).toHaveBeenCalledTimes(1);
-    expect(mockArtifactClient.uploadArtifact).toHaveBeenCalledWith(
+    expect(fs.promises.mkdir).toHaveBeenCalledWith('manifest_images', { recursive: true });
+    expect(fs.promises.writeFile).toHaveBeenCalledWith('manifest_images/.keep', '');
+  });
+
+  it('uploads the git state as an artifact', async () => {
+    await runAsync();
+
+    expect(uploader.uploadArtifactAsync).toHaveBeenCalledWith(
       'manifest_git_state',
-      ['manifest_git_state'],
-      './',
-      {
-        continueOnError: false,
-        retentionDays: 1
-      }
+      'manifest_git_state'
+    );
+  });
+
+  it('uploads the manifest folder as an artifact', async () => {
+    await runAsync();
+
+    expect(uploader.uploadArtifactAsync).toHaveBeenCalledWith(
+      'manifest_images',
+      'manifest_images/.keep'
     );
   });
 
   it('fails when the upload fails', async () => {
-    mockArtifactClient.uploadArtifact.mockResolvedValue({
-      failedItems: ['something']
-    });
+    uploader.uploadArtifactAsync.mockResolvedValue(false);
+
     await runAsync();
 
     expect(core.setFailed).toHaveBeenCalledTimes(1);

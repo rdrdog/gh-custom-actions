@@ -5,7 +5,7 @@
 
 secrets
 # Node modules need to be committed for github actions
-#**/node_modules
+**/node_modules
 
 # Binaries for programs and plugins
 *.exe

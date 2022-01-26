@@ -1,15 +1,14 @@
-const artifact = require('@actions/artifact');
-const core = require('@actions/core');
 const fs = require('fs');
+const path = require('path');
+const core = require('@actions/core');
 const git = require('./git');
+const uploader = require('./uploader');
 
 const manifestGitStateKey = "manifest_git_state";
+const manifestImagesKey = "manifest_images";
 
 const runAsync = async () => {
   try {
-
-    // await exec.exec('mkdir manifest_images');
-    // await exec.exec('touch manifest_images/.keep');
 
     const gitState = await git.generateGitStateAsync();
 
@@ -17,25 +16,17 @@ const runAsync = async () => {
 
     // Write the git state to file:
     await fs.promises.writeFile(manifestGitStateKey, JSON.stringify(gitState, null, 2));
+    // Create the manifest images folder and a .keep file to make sure it's uploaded as an artifact
+    await fs.promises.mkdir(manifestImagesKey, { recursive: true });
+    const manifestImagesPlaceholderFile = path.join(manifestImagesKey, '.keep');
+    await fs.promises.writeFile(manifestImagesPlaceholderFile, '');
 
-    // Publish the git state artifact:
-    const artifactClient = artifact.create()
-    const options = {
-      continueOnError: false,
-      retentionDays: 1
-    };
+    if (!(await uploader.uploadArtifactAsync(manifestGitStateKey, manifestGitStateKey))) {
+      throw Error('Unable to upload git state artifact');
+    }
 
-    const uploadResponse = await artifactClient.uploadArtifact(
-      manifestGitStateKey,
-      [manifestGitStateKey],
-      './',
-      options
-    )
-
-    if (uploadResponse.failedItems.length > 0) {
-      core.setFailed(`An error was encountered when uploading ${uploadResponse.artifactName}. There were ${uploadResponse.failedItems.length} items that failed to upload.`);
-    } else {
-      core.info(`Artifact ${uploadResponse.artifactName} has been successfully uploaded!`)
+    if (!(await uploader.uploadArtifactAsync(manifestImagesKey, manifestImagesPlaceholderFile))) {
+      throw Error('Unable to upload manifestImages folder');
     }
   }
   catch (error) {
