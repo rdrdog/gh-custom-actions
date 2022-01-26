@@ -4,7 +4,8 @@
 **/.idea
 
 secrets
-**/node_modules
+# Node modules need to be committed for github actions
+#**/node_modules
 
 # Binaries for programs and plugins
 *.exe
@@ -21,3 +22,6 @@ secrets
 
 build-artefacts
 samples/examples
+
+# local build artifact folder
+/tmp
