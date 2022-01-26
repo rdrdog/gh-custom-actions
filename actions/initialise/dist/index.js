@@ -6959,20 +6959,13 @@ var require_initialise = __commonJS({
     var git = require_git();
     var uploader = require_uploader();
     var manifestGitStateKey = "manifest_git_state";
-    var manifestImagesKey = "manifest_images";
     var runAsync2 = async () => {
       try {
         const gitState = await git.generateGitStateAsync();
         core.debug("Generated git state: ", gitState);
         await fs.promises.writeFile(manifestGitStateKey, JSON.stringify(gitState, null, 2));
-        await fs.promises.mkdir(manifestImagesKey, { recursive: true });
-        const manifestImagesPlaceholderFile = path.join(manifestImagesKey, ".keep");
-        await fs.promises.writeFile(manifestImagesPlaceholderFile, "");
         if (!await uploader.uploadArtifactAsync(manifestGitStateKey, manifestGitStateKey)) {
           throw Error("Unable to upload git state artifact");
-        }
-        if (!await uploader.uploadArtifactAsync(manifestImagesKey, manifestImagesPlaceholderFile)) {
-          throw Error("Unable to upload manifestImages folder");
         }
       } catch (error) {
         core.setFailed(error.message);
