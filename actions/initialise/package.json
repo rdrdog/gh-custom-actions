@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "test-watch": "jest --watch"
+    "test-watch": "jest --watch",
+    "clean": "rimraf dist && mkdirp dist",
+    "build": "npm run clean && esbuild index.js --bundle --platform=node --target=node16 > dist/index.js"
   },
   "keywords": [],
   "author": "",
@@ -13,7 +15,12 @@
   "dependencies": {
     "@actions/artifact": "^0.6.1",
     "@actions/core": "^1.6.0",
-    "@actions/exec": "^1.1.0",
-    "jest": "^27.4.7"
+    "@actions/exec": "^1.1.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.14.14",
+    "jest": "^27.4.7",
+    "mkdirp": "^1.0.4",
+    "rimraf": "^3.0.2"
   }
 }

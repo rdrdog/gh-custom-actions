@@ -26,4 +26,6 @@ jobs:
 
     - name: test initialise action
       working-directory: ./actions/initialise
-      run: npm test
+      run: |
+        npm ci
+        npm test
