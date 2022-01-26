@@ -1,0 +1,29 @@
+name: Validate actions
+concurrency:
+  group: ${{ github.ref_name }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up node
+      uses: actions/setup-node@v1
+      with:
+        node-version: '16'
+
+    - name: test initialise action
+      working-directory: ./actions/initialise
+      run: npm test

@@ -13,8 +13,17 @@ In another folder, outside of this repo:
     ```
 1. using the binary created in the act repo (e.g. `~/code/act/dist/local/act`), run the github actions locally, specifying a temporary artifact path:
     ```
-    ~/code/act/dist/local/act --artifact-server-path ./tmp
+    ~/code/act/dist/local/act --artifact-server-path ./tmp -W .github/workflows/build-and-deploy.yml
     ```
+
+# Running tests
+To run all tests, run the validate-actions.yml github action:
+
+```
+act -W .github/workflows/validate-actions.yml
+```
+
+To run specific tests, run `npm test` (or `npm test-watch`) from each folder under _./actions_.
 
 # Current issues with ACT:
 - 'uses' in composite workflows (merged, but not released): https://github.com/nektos/act/pull/793
