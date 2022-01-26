@@ -6,7 +6,7 @@ const fs = require('fs');
 
 
 const manifestGitStateKey = "manifest_git_state";
-const loadGitState = async () => {
+const loadGitStateAsync = async () => {
   const artifactClient = artifact.create();
 
   const downloadOptions = {
@@ -21,53 +21,64 @@ const loadGitState = async () => {
 
   core.info(`Artifact ${downloadResponse.artifactName} was downloaded to ${downloadResponse.downloadPath}`);
 
+  const fileContents = await fs.promises.readFile(manifestGitStateKey, { encoding: 'utf8' });
+  core.info('read git state contents: ' + fileContents);
+
+  return JSON.parse(fileContents);
 }
 
-const run = async () => {
+const loadFqImageName = () => {
+  let registry = core.getInput('registry').trim();
+    // set the container registry to have a trailing slash, unless it is empty
+    if (registry != '' && !registry.endsWith('/')) {
+      registry += '/';
+    }
+    if (process.env.ACT === "true") {
+      core.info('Setting container registry to empty string for local container builds');
+      registry = '';
+    }
+
+    return `${registry}${process.env.STACK_NAME}/${core.getInput('image_name')}`;
+}
+
+const generateImageTag = (gitState) => {
+  // Define out image tag
+  let imageTag = gitState.commitSha.substring(0, 7);
+  if (process.env.ACT === "true") {
+    core.info('Adding unix epoch to image tag for local builds');
+    imageTag += '-' + new Date().getTime();
+  }
+  return imageTag;
+}
+
+let gitState = {
+  commitSha: '',
+  branchName: '',
+  mainBranchForkPoint: '',
+  fileChangesInBranch: []
+};
+
+const runAsync = async () => {
   try {
 
-    await loadGitState();
-    const fileContents = await fs.promises.readFile(manifestGitStateKey, { encoding: 'utf8' });
-    core.info('read git state contents: ' + fileContents);
+    gitState = await loadGitStateAsync();
 
-    /*Do this:
+    const fqImageName = loadFqImageName();
+    const imageTag = generateImageTag(gitState);
 
-    # set the container registry to have a trailing slash, unless it is empty
-  #       registry="${{ inputs.registry }}"
-  #       if [[ "$registry" != "" && "$registry" != * / ]]; then
-  #         registry="$registry/"
-  #       fi
-  #       if [[ "$ACT" == "true" ]]; then
-  #         # no registry for local builds
-  #         registry=""
-  #       fi
+    core.info('FQImageName: ' + fqImageName);
+    core.info('imageTag: ' + imageTag);
 
-  #       fqImageName=${registry}${STACK_NAME}/${{ inputs.image_name }}
+    // - TODO: determine if container should be build
+    // - TODO: pull latest image for cache
+    // - TODO: docker build
+    // - TODO: push images
+    // - TODO: fetch manifest images
+    // - TODO: store image name and tag in manifest
 
-  #       # Define image tag
-  #       imageTag=${GIT_COMMIT_SHA:0:7}
-  #       if [[ "$ACT" == "true" ]]; then
-  #         # add date time to image tag for local builds
-  #         imageTag="$imageTag-$(date +"%y%m%d%H%M%S")"
-  #       fi
-
-  #       echo "::set-output name=FQ_IMAGE_NAME::$fqImageName"
-  #       echo "::set-output name=IMAGE_TAG::$imageTag"
-
-  */
-
-
-    // `who-to-greet` input defined in action metadata file
-    const nameToGreet = core.getInput('who-to-greet');
-    console.log(`Hello ${nameToGreet}!`);
-    const time = (new Date()).toTimeString();
-    core.setOutput("time", time);
-    // Get the JSON webhook payload for the event that triggered the workflow
-    const payload = JSON.stringify(github.context.payload, undefined, 2)
-    console.log(`The event payload: ${payload}`);
   } catch (error) {
     core.setFailed(error.message);
   }
 }
 
-run();
+runAsync();
