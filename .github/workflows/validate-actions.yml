@@ -24,6 +24,12 @@ jobs:
       with:
         node-version: '16'
 
+    - name: install yarn
+      if: ${{ github.actor == 'nektos/act' }}
+      run: |
+        set
+        npm install -g yarn
+
     - name: test actions
       run: |
         yarn

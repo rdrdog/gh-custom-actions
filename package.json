@@ -22,5 +22,8 @@
     "esbuild": "^0.14.14",
     "mkdirp": "^1.0.4",
     "rimraf": "^3.0.2"
+  },
+  "jest": {
+    "testPathIgnorePatterns": ["example-apps"]
   }
 }
