@@ -31,5 +31,8 @@
     "hooks": {
       "pre-commit": "prettier --write . && git add -u"
     }
+  },
+  "jest": {
+    "testPathIgnorePatterns": ["example-apps"]
   }
 }
