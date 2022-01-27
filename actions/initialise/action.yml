@@ -8,5 +8,9 @@ inputs:
     default: main
 
 runs:
-  using: 'node16'
-  main: 'dist/index.js'
+  # using: 'node16'
+  # main: 'dist/index.js'
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.main_branch_name }}
