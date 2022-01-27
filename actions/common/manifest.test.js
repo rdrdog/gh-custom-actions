@@ -70,7 +70,6 @@ describe("storeImageNameAndTagAsync", () => {
 
   beforeEach(() => {
     jest.resetAllMocks();
-    // git.generateGitStateAsync.mockResolvedValue(gitState);
   });
 
   it("writes the image details to file", async () => {
