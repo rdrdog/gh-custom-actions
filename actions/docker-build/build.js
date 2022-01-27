@@ -2,9 +2,9 @@ const core = require("@actions/core");
 const path = require("path");
 const docker = require("@eroad/gh-common/docker");
 
-const artifactHandler = require("./artifact-handler");
-const imageNamer = require("./image-namer");
-const constants = require("./constants");
+const artifactHandler = require("@eroad/gh-common/artifact-handler");
+const imageNamer = require("@eroad/gh-common/image-namer");
+const constants = require("@eroad/gh-common/constants");
 
 module.exports = {
   build: async () => {
