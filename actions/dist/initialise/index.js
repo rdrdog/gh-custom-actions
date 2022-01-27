@@ -2346,9 +2346,9 @@ var require_exec = __commonJS({
   }
 });
 
-// git.js
+// actions/initialise/git.js
 var require_git = __commonJS({
-  "git.js"(exports, module2) {
+  "actions/initialise/git.js"(exports, module2) {
     var core = require_core();
     var exec = require_exec();
     var getCommitShaAsync = async () => {
@@ -6927,9 +6927,9 @@ var require_artifact_client2 = __commonJS({
   }
 });
 
-// uploader.js
+// actions/initialise/uploader.js
 var require_uploader = __commonJS({
-  "uploader.js"(exports, module2) {
+  "actions/initialise/uploader.js"(exports, module2) {
     var artifact = require_artifact_client2();
     var core = require_core();
     module2.exports = {
@@ -6951,9 +6951,9 @@ var require_uploader = __commonJS({
   }
 });
 
-// initialise.js
+// actions/initialise/initialise.js
 var require_initialise = __commonJS({
-  "initialise.js"(exports, module2) {
+  "actions/initialise/initialise.js"(exports, module2) {
     var fs = require("fs");
     var core = require_core();
     var git = require_git();
@@ -6975,7 +6975,7 @@ var require_initialise = __commonJS({
   }
 });
 
-// index.js
+// actions/initialise/index.js
 var { runAsync } = require_initialise();
 runAsync();
 /*!

@@ -1,13 +1,11 @@
 {
-  "name": "docker-build",
+  "name": "@eroad/gh-docker-build",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "test-watch": "jest --watch",
-    "clean": "rimraf dist && mkdirp dist",
-    "build": "npm run clean && esbuild index.js --bundle --platform=node --target=node16 > dist/index.js"
+    "test-watch": "jest --watch"
   },
   "keywords": [],
   "author": "",
@@ -16,12 +14,10 @@
     "@actions/artifact": "^0.6.1",
     "@actions/core": "^1.6.0",
     "@actions/exec": "^1.1.0",
-    "@actions/github": "^5.0.0"
+    "@actions/github": "^5.0.0",
+    "@eroad/gh-common": "1.0.0"
   },
   "devDependencies": {
-    "esbuild": "^0.14.14",
-    "jest": "^27.4.7",
-    "mkdirp": "^1.0.4",
-    "rimraf": "^3.0.2"
+    "jest": "^27.4.7"
   }
 }

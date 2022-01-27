@@ -1,6 +1,6 @@
 const core = require('@actions/core');
 const path = require('path');
-const docker = require('./docker');
+const docker = require('@eroad/gh-common/docker');
 
 const artifactHandler = require('./artifact-handler');
 const imageNamer = require('./image-namer');

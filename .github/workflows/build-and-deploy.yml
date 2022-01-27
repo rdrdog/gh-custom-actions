@@ -27,7 +27,7 @@ jobs:
         fetch-depth: 0 # This ensures we can get the main branch fork point for PRs
 
     - name: initialise pipeline state
-      uses: ./actions/initialise
+      uses: ./actions/dist/initialise
       with:
         main_branch_name: main
 
@@ -40,21 +40,21 @@ jobs:
       uses: actions/checkout@v2
 
     - name: build api
-      uses: ./actions/docker-build
+      uses: ./actions/dist/docker-build
       with:
         image_name: api
         dockerfile: example-apps/api/Dockerfile
         includes: example-apps/api/**
 
     - name: build infra
-      uses: ./actions/docker-build
+      uses: ./actions/dist/docker-build
       with:
         image_name: infra
         dockerfile: example-apps/infra/Dockerfile
         includes: example-apps/infra/**
 
     - name: build tests
-      uses: ./actions/docker-build
+      uses: ./actions/dist/docker-build
       with:
         image_name: tests
         dockerfile: example-apps/tests/Dockerfile
@@ -105,14 +105,14 @@ jobs:
   #     uses: ./.github/workflows/composite/docker-run
   #     with:
   #       image_name: infra
-  #       environment: local
+  #       environment: localk8s
 
   #   - name: deploy to k8s
   #     uses: ./.github/workflows/composite/k8s-deploy
   #     with:
   #       #image_names: api,kafka-consumer,kafka-producer
   #       image_names: api
-  #       environment: local
+  #       environment: localk8s
   #       secretKeys: spn-pass,api-key
   #       secretEnvValues: SPN_PASS,API_KEY
 
@@ -120,7 +120,7 @@ jobs:
   #     uses: ./.github/workflows/composite/docker-run
   #     with:
   #       image_name: tests
-  #       environment: local
+  #       environment: localk8s
 
 
   # deploy-dev:

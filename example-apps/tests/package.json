@@ -17,7 +17,7 @@
     "typescript": "^4.3.5"
   },
   "scripts": {
-    "test": "npm run compile && ENVIRONMENT_NAME=local npm run test:env",
+    "test": "npm run compile && ENVIRONMENT_NAME=localk8s npm run test:env",
     "test:env": "cross-env-shell npx cucumber-js features/**/*.feature --profile ${ENVIRONMENT_NAME}",
     "compile": "npx tsc"
   },

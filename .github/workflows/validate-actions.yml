@@ -24,8 +24,7 @@ jobs:
       with:
         node-version: '16'
 
-    - name: test initialise action
-      working-directory: ./actions/initialise
+    - name: test actions
       run: |
-        npm ci
-        npm test
+        yarn
+        yarn test

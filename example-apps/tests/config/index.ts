@@ -9,10 +9,10 @@ const envName = process.env.ENVIRONMENT_NAME;
 console.log(`Environment name = ${envName}`);
 
 switch (envName) {
-  case 'local':
+  case 'localk8s':
     // configuration for when running locally in k8s
     config = {
-      apiBaseUrl: 'http://host.docker.internal/example-api-milford',
+      apiBaseUrl: 'http://host.docker.internal/example-api',
       // For local deployment, we route using the 'host.docker.internal' hostname, but pass the 'example.localhost' host header
       hostName: process.env.APPLICATION_HOST_NAME
     };

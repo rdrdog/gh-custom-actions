@@ -3,7 +3,7 @@ const config = {
 };
 
 switch (process.env.ENVIRONMENT_NAME) {
-  case 'local':
+  case 'localk8s':
     config.corsOrigins = ['http://localhost:5000', `http://${process.env.APPLICATION_HOST_NAME}`];
     break;
   case 'dev':

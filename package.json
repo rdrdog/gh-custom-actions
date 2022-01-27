@@ -1,0 +1,26 @@
+{
+  "name": "gh-custom-actions",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:rdrdog/gh-custom-actions.git",
+  "author": "Robert Redgwell <robert.redgwell@clearpoint.co.nz>",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "actions/*"
+  ],
+  "scripts": {
+    "test": "jest",
+    "test-watch": "jest --watch",
+    "clean": "rimraf actions/dist && mkdirp actions/dist",
+    "copy-actions-yml": "copyfiles -u 1 actions/**/action.yml actions/dist",
+    "build": "esbuild actions/**/index.js --bundle --platform=node --target=node16 --outdir=actions/dist --outbase=actions",
+    "dist": "yarn run clean && yarn run copy-actions-yml && yarn run build"
+  },
+  "devDependencies": {
+    "copyfiles": "^2.4.1",
+    "esbuild": "^0.14.14",
+    "mkdirp": "^1.0.4",
+    "rimraf": "^3.0.2"
+  }
+}

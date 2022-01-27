@@ -2346,9 +2346,9 @@ var require_exec = __commonJS({
   }
 });
 
-// docker.js
+// actions/common/docker.js
 var require_docker = __commonJS({
-  "docker.js"(exports, module2) {
+  "actions/common/docker.js"(exports, module2) {
     var core = require_core();
     var exec = require_exec();
     var buildKitEnabled = true;
@@ -6948,9 +6948,9 @@ var require_artifact_client2 = __commonJS({
   }
 });
 
-// constants.js
+// actions/docker-build/constants.js
 var require_constants = __commonJS({
-  "constants.js"(exports, module2) {
+  "actions/docker-build/constants.js"(exports, module2) {
     module2.exports = {
       buildArgContainerCommitSha: "COMMIT_SHA",
       buildArgContainerBuildNumber: "BUILD_NUMBER",
@@ -6965,9 +6965,9 @@ var require_constants = __commonJS({
   }
 });
 
-// artifact-handler.js
+// actions/docker-build/artifact-handler.js
 var require_artifact_handler = __commonJS({
-  "artifact-handler.js"(exports, module2) {
+  "actions/docker-build/artifact-handler.js"(exports, module2) {
     var artifact = require_artifact_client2();
     var core = require_core();
     var fs = require("fs");
@@ -7010,9 +7010,9 @@ var require_artifact_handler = __commonJS({
   }
 });
 
-// image-namer.js
+// actions/docker-build/image-namer.js
 var require_image_namer = __commonJS({
-  "image-namer.js"(exports, module2) {
+  "actions/docker-build/image-namer.js"(exports, module2) {
     var core = require_core();
     var constants = require_constants();
     module2.exports = {
@@ -7039,9 +7039,9 @@ var require_image_namer = __commonJS({
   }
 });
 
-// build.js
+// actions/docker-build/build.js
 var require_build = __commonJS({
-  "build.js"(exports, module2) {
+  "actions/docker-build/build.js"(exports, module2) {
     var core = require_core();
     var path = require("path");
     var docker = require_docker();
@@ -7085,7 +7085,7 @@ var require_build = __commonJS({
   }
 });
 
-// index.js
+// actions/docker-build/index.js
 var { build } = require_build();
 build();
 /*!
