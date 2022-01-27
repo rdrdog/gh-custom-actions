@@ -2356,7 +2356,11 @@ var require_docker = __commonJS({
     };
     var pullAsync = async (imageNameAndTag, ignorePullFailure = true) => {
       core.info(`Attempting pull of image ${imageNameAndTag}`);
-      const exitCode = await exec.exec("docker", ["pull", "--quiet", imageNameAndTag]);
+      const exitCode = await exec.exec("docker", [
+        "pull",
+        "--quiet",
+        imageNameAndTag
+      ]);
       if (exitCode == 0) {
         return;
       }

@@ -1,3 +1,3 @@
-const { runAsync } = require('./initialise');
+const { runAsync } = require("./initialise");
 
 runAsync();

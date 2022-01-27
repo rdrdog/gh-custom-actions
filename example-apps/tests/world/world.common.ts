@@ -1,4 +1,8 @@
-import { setWorldConstructor, setDefaultTimeout, World} from "@cucumber/cucumber";
+import {
+  setWorldConstructor,
+  setDefaultTimeout,
+  World,
+} from "@cucumber/cucumber";
 import { Response } from "node-fetch";
 import { config } from "../config";
 
@@ -9,13 +13,13 @@ export class CommonWorld extends World {
   private responseBody: any = null;
 
   constructor(options: any) {
-    super(options)
+    super(options);
   }
 
   public getDefaultHeaders(): any {
     const result: any = {
-      'Accept': 'application/json',
-      'Accept-Language': 'en-NZ'
+      Accept: "application/json",
+      "Accept-Language": "en-NZ",
     };
 
     if (!!config.hostName) {
@@ -34,7 +38,6 @@ export class CommonWorld extends World {
   }
 
   public async callApiAsync(apiInvocation: () => Promise<Response>) {
-
     try {
       const response = await apiInvocation();
       this.setResponse(response.status, await response.text());

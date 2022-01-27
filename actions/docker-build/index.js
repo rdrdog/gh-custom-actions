@@ -1,3 +1,3 @@
-const { build } = require('./build');
+const { build } = require("./build");
 
 build();

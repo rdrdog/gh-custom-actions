@@ -15,16 +15,15 @@ jobs:
   run-tests:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Set up node
+        uses: actions/setup-node@v1
+        with:
+          node-version: "16"
 
-    - name: Set up node
-      uses: actions/setup-node@v1
-      with:
-        node-version: '16'
-
-    - name: test actions
-      run: |
-        yarn
-        yarn test
+      - name: test actions
+        run: |
+          yarn
+          yarn test
