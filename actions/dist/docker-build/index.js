@@ -6990,11 +6990,9 @@ var require_constants = __commonJS({
     module2.exports = {
       buildArgContainerCommitSha: "COMMIT_SHA",
       buildArgContainerBuildNumber: "BUILD_NUMBER",
-      inputImageName: "image_name",
       inputDockerfile: "dockerfile",
       inputContext: "context",
       inputIncludes: "includes",
-      inputRegistry: "registry",
       isCI: () => process.env.ACT !== "true"
     };
   }
@@ -7092,8 +7090,11 @@ var require_image_namer = __commonJS({
     var core = require_core();
     var constants = require_constants();
     module2.exports = {
-      loadFqImageName: (imageName) => {
-        let registry = core.getInput(constants.inputRegistry).trim();
+      loadFqImageName: (registry, imageName) => {
+        if (!process.env.STACK_NAME) {
+          throw new Error("STACK_NAME env var must be defined for generating container image names");
+        }
+        registry = registry.trim();
         if (registry != "" && !registry.endsWith("/")) {
           registry += "/";
         }
@@ -7150,12 +7151,15 @@ var require_build = __commonJS({
     var imageNamer = require_image_namer();
     var constants = require_constants();
     var manifest = require_manifest();
+    var inputRegistry = "registry";
+    var inputImageName = "image_name";
     module2.exports = {
       build: async () => {
         try {
+          const imageName = core.getInput(inputImageName);
+          const registry = core.getInput(inputRegistry);
           const gitState = await git.loadGitStateAsync();
-          const imageName = core.getInput(constants.inputImageName);
-          const fqImageName = imageNamer.loadFqImageName(imageName);
+          const fqImageName = imageNamer.loadFqImageName(registry, imageName);
           const imageTag = imageNamer.generateImageTag(gitState);
           core.info("FQImageName: " + fqImageName);
           core.info("imageTag: " + imageTag);

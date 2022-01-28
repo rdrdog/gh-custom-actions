@@ -7,13 +7,18 @@ const imageNamer = require("@eroad/gh-common/image-namer");
 const constants = require("@eroad/gh-common/constants");
 const manifest = require("@eroad/gh-common/manifest");
 
+const inputRegistry = "registry";
+const inputImageName = "image_name";
+
 module.exports = {
   build: async () => {
     try {
+      const imageName = core.getInput(inputImageName);
+      const registry = core.getInput(inputRegistry);
+
       const gitState = await git.loadGitStateAsync();
 
-      const imageName = core.getInput(constants.inputImageName);
-      const fqImageName = imageNamer.loadFqImageName(imageName);
+      const fqImageName = imageNamer.loadFqImageName(registry, imageName);
       const imageTag = imageNamer.generateImageTag(gitState);
 
       core.info("FQImageName: " + fqImageName);
