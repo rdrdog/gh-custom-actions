@@ -9,5 +9,4 @@ module.exports = {
   inputRegistry: "registry",
 
   manifestGitStateKey: "manifest_git_state",
-  manifestImagesKey: "manifest_images",
 };
