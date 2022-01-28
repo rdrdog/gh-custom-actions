@@ -12,23 +12,23 @@ inputs:
 runs:
   using: "composite"
   steps:
-  - name: fetch git state
-    uses: actions/download-artifact@v2
-    with:
-      name: manifest_git_state
+    - name: fetch git state
+      uses: actions/download-artifact@v2
+      with:
+        name: manifest_git_state
 
-  - name: load git state
-    shell: bash
-    run: |
-      sed "" manifest_git_state >> $GITHUB_ENV
+    - name: load git state
+      shell: bash
+      run: |
+        sed "" manifest_git_state >> $GITHUB_ENV
 
-  - uses: actions/download-artifact@v2
-    with:
-      name: manifest_images
-      path: manifest_images
+    - uses: actions/download-artifact@v2
+      with:
+        name: manifest_images
+        path: manifest_images
 
-  - name: Run docker image
-    shell: bash
-    run: |
-      image=$(cat manifest_images/${{ inputs.image_name }})
-      echo "docker run -e ENVIRONMENT=${{ inputs.environment }} $image"
+    - name: Run docker image
+      shell: bash
+      run: |
+        image=$(cat manifest_images/${{ inputs.image_name }})
+        echo "docker run -e ENVIRONMENT=${{ inputs.environment }} $image"

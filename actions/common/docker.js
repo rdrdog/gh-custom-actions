@@ -1,10 +1,13 @@
-const core = require('@actions/core');
-const exec = require('@actions/exec');
+const core = require("@actions/core");
+const exec = require("@actions/exec");
 
 const buildKitEnabled = true;
 
-const _executeDockerProcessAsync = async (args, options, strErrToStdOut = false) => {
-};
+const _executeDockerProcessAsync = async (
+  args,
+  options,
+  strErrToStdOut = false
+) => {};
 
 // const loginAsync = async (containerRegistry) => {
 //   if (configLoader.config.requiresDockerLogin) {
@@ -22,7 +25,11 @@ const _executeDockerProcessAsync = async (args, options, strErrToStdOut = false)
 
 const pullAsync = async (imageNameAndTag, ignorePullFailure = true) => {
   core.info(`Attempting pull of image ${imageNameAndTag}`);
-  const exitCode = await exec.exec('docker', ['pull', '--quiet', imageNameAndTag]);
+  const exitCode = await exec.exec("docker", [
+    "pull",
+    "--quiet",
+    imageNameAndTag,
+  ]);
   if (exitCode == 0) {
     return;
   }
@@ -36,38 +43,40 @@ const pullAsync = async (imageNameAndTag, ignorePullFailure = true) => {
   throw Error(`docker pull ${imageNameAndTag} failed`);
 };
 
-const getBuildArgsAsync = async (dockerfilePath,
+const getBuildArgsAsync = async (
+  dockerfilePath,
   context,
   imageName,
   imageTag,
   additionalBuildArgs = []
 ) => {
-
   // Build our container
   const buildArgs = [
-    'build',
-    '-t', `${imageName}:latest`,
-    '-t', `${imageName}:${imageTag}`,
-    '--cache-from', `${imageName}:latest`,
+    "build",
+    "-t",
+    `${imageName}:latest`,
+    "-t",
+    `${imageName}:${imageTag}`,
+    "--cache-from",
+    `${imageName}:latest`,
   ];
 
   for (const arg of additionalBuildArgs) {
-    buildArgs.push('--build-arg', arg);
+    buildArgs.push("--build-arg", arg);
   }
 
   if (buildKitEnabled) {
-    core.info('⚡ buildkit enabled ⚡');
-    buildArgs.push(
-      '--build-arg', 'BUILDKIT_INLINE_CACHE=1',
-    );
+    core.info("⚡ buildkit enabled ⚡");
+    buildArgs.push("--build-arg", "BUILDKIT_INLINE_CACHE=1");
   }
 
-  buildArgs.push('-f', dockerfilePath, context);
+  buildArgs.push("-f", dockerfilePath, context);
 
   return buildArgs;
 };
 
-const buildAsync = async (dockerfilePath,
+const buildAsync = async (
+  dockerfilePath,
   contextPath,
   fqImageName,
   imageTag,
@@ -76,30 +85,38 @@ const buildAsync = async (dockerfilePath,
   // Enable docker buildkit
   process.env.DOCKER_BUILDKIT = buildKitEnabled ? 1 : 0;
 
-  const buildArgs = await getBuildArgsAsync(dockerfilePath, contextPath, fqImageName, imageTag, additionalBuildArgs);
-	core.debug(`🐳 docker ${buildArgs.join(' ')}`);
+  const buildArgs = await getBuildArgsAsync(
+    dockerfilePath,
+    contextPath,
+    fqImageName,
+    imageTag,
+    additionalBuildArgs
+  );
+  core.debug(`🐳 docker ${buildArgs.join(" ")}`);
 
-  const output = await exec.getExecOutput('docker', buildArgs)
+  const output = await exec.getExecOutput("docker", buildArgs);
   if (output.exitCode != 0) {
-    core.setFailed(`Failed to build docker image ${fqImageName} (dockerFile: ${dockerfilePath})`);
+    core.setFailed(
+      `Failed to build docker image ${fqImageName} (dockerFile: ${dockerfilePath})`
+    );
   }
 };
 
 const runAsync = async (container, envVars) => {
   core.info(`Running docker container ${container}`);
 
-  let environmentArgs = '';
+  let environmentArgs = "";
   for (const key of Object.keys(envVars || {})) {
     environmentArgs += `-e ${key}=${envVars[key]} `;
     core.info(`Adding environment var: ${key}`);
   }
   const runArgs = `run --rm ${environmentArgs}${container}`;
-  await _executeDockerProcessAsync(runArgs.split(' '));
+  await _executeDockerProcessAsync(runArgs.split(" "));
 };
 
 const pushAsync = async (imageNameAndTag) => {
   core.info(`Pushing image ${imageNameAndTag}`);
-  await _executeDockerProcessAsync(['push', imageNameAndTag]);
+  await _executeDockerProcessAsync(["push", imageNameAndTag]);
 };
 
 // const getLatestImageWithSuffixLocalAsync = async (containerName, tagSuffix) => {
@@ -115,9 +132,8 @@ const pushAsync = async (imageNameAndTag) => {
 //   }
 // };
 
-
 module.exports = {
-//  loginAsync,
+  //  loginAsync,
   pullAsync,
   getBuildArgsAsync,
   buildAsync,

@@ -2356,7 +2356,11 @@ var require_docker = __commonJS({
     };
     var pullAsync = async (imageNameAndTag, ignorePullFailure = true) => {
       core.info(`Attempting pull of image ${imageNameAndTag}`);
-      const exitCode = await exec.exec("docker", ["pull", "--quiet", imageNameAndTag]);
+      const exitCode = await exec.exec("docker", [
+        "pull",
+        "--quiet",
+        imageNameAndTag
+      ]);
       if (exitCode == 0) {
         return;
       }
@@ -6948,9 +6952,9 @@ var require_artifact_client2 = __commonJS({
   }
 });
 
-// actions/docker-build/constants.js
+// actions/common/constants.js
 var require_constants = __commonJS({
-  "actions/docker-build/constants.js"(exports, module2) {
+  "actions/common/constants.js"(exports, module2) {
     module2.exports = {
       buildArgContainerCommitSha: "COMMIT_SHA",
       buildArgContainerBuildNumber: "BUILD_NUMBER",
@@ -6959,19 +6963,17 @@ var require_constants = __commonJS({
       inputContext: "context",
       inputIncludes: "includes",
       inputRegistry: "registry",
-      manifestGitStateKey: "manifest_git_state",
-      manifestImagesKey: "manifest_images"
+      manifestGitStateKey: "manifest_git_state"
     };
   }
 });
 
-// actions/docker-build/artifact-handler.js
+// actions/common/artifact-handler.js
 var require_artifact_handler = __commonJS({
-  "actions/docker-build/artifact-handler.js"(exports, module2) {
+  "actions/common/artifact-handler.js"(exports, module2) {
     var artifact = require_artifact_client2();
     var core = require_core();
     var fs = require("fs");
-    var path = require("path");
     var constants = require_constants();
     var downloadArtifactAsync = async (key) => {
       const artifactClient = artifact.create();
@@ -6981,38 +6983,35 @@ var require_artifact_handler = __commonJS({
       const downloadResponse = await artifactClient.downloadArtifact(key, "", downloadOptions);
       core.info(`Artifact ${downloadResponse.artifactName} was downloaded to ${downloadResponse.downloadPath}`);
     };
-    var uploadArtifactAsync = async (key, path2) => {
-      const artifactClient = artifact.create();
-      const options = {
-        continueOnError: false,
-        retentionDays: 1
-      };
-      const uploadResponse = await artifactClient.uploadArtifact(key, [path2], "./", options);
-      if (uploadResponse.failedItems.length > 0) {
-        core.setFailed(`An error was encountered when uploading ${uploadResponse.artifactName}. There were ${uploadResponse.failedItems.length} items that failed to upload.`);
-        return false;
-      }
-      core.info(`Artifact ${uploadResponse.artifactName} has been successfully uploaded!`);
-      return true;
-    };
     module2.exports = {
+      uploadArtifactAsync: async (key, path) => {
+        const artifactClient = artifact.create();
+        const options = {
+          continueOnError: false,
+          retentionDays: 1
+        };
+        const uploadResponse = await artifactClient.uploadArtifact(key, [path], "./", options);
+        if (uploadResponse.failedItems.length > 0) {
+          core.setFailed(`An error was encountered when uploading ${uploadResponse.artifactName}. There were ${uploadResponse.failedItems.length} items that failed to upload.`);
+          return false;
+        }
+        core.info(`Artifact ${uploadResponse.artifactName} has been successfully uploaded!`);
+        return true;
+      },
+      downloadArtifactAsync,
       loadGitStateAsync: async () => {
         await downloadArtifactAsync(constants.manifestGitStateKey);
         const fileContents = await fs.promises.readFile(constants.manifestGitStateKey, { encoding: "utf8" });
         core.info("read git state contents: " + fileContents);
         return JSON.parse(fileContents);
-      },
-      storeImageNameAndTagAsync: async (imageName, fqImageName, imageTag) => {
-        await fs.promises.writeFile(imageName, `${fqImageName}:${imageTag}`);
-        await uploadArtifactAsync(constants.manifestImagesKey, imageName);
       }
     };
   }
 });
 
-// actions/docker-build/image-namer.js
+// actions/common/image-namer.js
 var require_image_namer = __commonJS({
-  "actions/docker-build/image-namer.js"(exports, module2) {
+  "actions/common/image-namer.js"(exports, module2) {
     var core = require_core();
     var constants = require_constants();
     module2.exports = {
@@ -7039,6 +7038,31 @@ var require_image_namer = __commonJS({
   }
 });
 
+// actions/common/manifest.js
+var require_manifest = __commonJS({
+  "actions/common/manifest.js"(exports, module2) {
+    var core = require_core();
+    var fs = require("fs");
+    var artifactHandler = require_artifact_handler();
+    var manifestImagesKey = "manifest_images";
+    var getImageNameAndTagAsync = async (imageName) => {
+      if (!getImageNameAndTagAsync._hasDownloaded) {
+        await artifactHandler.downloadArtifactAsync(manifestImagesKey);
+        getImageNameAndTagAsync._hasDownloaded = true;
+      }
+      return await fs.promises.readFile(imageName, { encoding: "utf8" });
+    };
+    var storeImageNameAndTagAsync = async (imageName, fqImageName, imageTag) => {
+      await fs.promises.writeFile(imageName, `${fqImageName}:${imageTag}`);
+      await artifactHandler.uploadArtifactAsync(manifestImagesKey, imageName);
+    };
+    module2.exports = {
+      getImageNameAndTagAsync,
+      storeImageNameAndTagAsync
+    };
+  }
+});
+
 // actions/docker-build/build.js
 var require_build = __commonJS({
   "actions/docker-build/build.js"(exports, module2) {
@@ -7048,6 +7072,7 @@ var require_build = __commonJS({
     var artifactHandler = require_artifact_handler();
     var imageNamer = require_image_namer();
     var constants = require_constants();
+    var manifest = require_manifest();
     module2.exports = {
       build: async () => {
         try {
@@ -7076,7 +7101,7 @@ var require_build = __commonJS({
           } else {
             core.info(`\u23ED skipping container push for ${imageName}`);
           }
-          await artifactHandler.storeImageNameAndTagAsync(imageName, fqImageName, imageTag);
+          await manifest.storeImageNameAndTagAsync(imageName, fqImageName, imageTag);
         } catch (error) {
           core.setFailed(error.message);
         }

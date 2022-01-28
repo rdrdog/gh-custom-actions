@@ -1,23 +1,23 @@
-const core = require('@actions/core');
-const path = require('path');
-const docker = require('@eroad/gh-common/docker');
+const core = require("@actions/core");
+const path = require("path");
+const docker = require("@eroad/gh-common/docker");
 
-const artifactHandler = require('./artifact-handler');
-const imageNamer = require('./image-namer');
-const constants = require('./constants');
+const artifactHandler = require("@eroad/gh-common/artifact-handler");
+const imageNamer = require("@eroad/gh-common/image-namer");
+const constants = require("@eroad/gh-common/constants");
+const manifest = require("@eroad/gh-common/manifest");
 
 module.exports = {
   build: async () => {
     try {
-
       const gitState = await artifactHandler.loadGitStateAsync();
 
       const imageName = core.getInput(constants.inputImageName);
       const fqImageName = imageNamer.loadFqImageName(imageName);
       const imageTag = imageNamer.generateImageTag(gitState);
 
-      core.info('FQImageName: ' + fqImageName);
-      core.info('imageTag: ' + imageTag);
+      core.info("FQImageName: " + fqImageName);
+      core.info("imageTag: " + imageTag);
 
       // - TODO: determine if container should be build
 
@@ -30,7 +30,7 @@ module.exports = {
       const buildArgs = [
         `${constants.buildArgContainerBuildNumber}="${gitState.buildNumber}"`,
         `${constants.buildArgContainerCommitSha}="${gitState.commitSha}"`,
-      ]
+      ];
 
       // determine our build context:
       const dockerfilePath = core.getInput(constants.inputDockerfile);
@@ -48,16 +48,19 @@ module.exports = {
       );
 
       if (process.env.ACT !== "true") {
-        await docker.pushAsync(`${fqImageName}:${imageTag}`)
-        await docker.pushAsync(`${fqImageName}:latest`)
+        await docker.pushAsync(`${fqImageName}:${imageTag}`);
+        await docker.pushAsync(`${fqImageName}:latest`);
       } else {
-        core.info(`⏭ skipping container push for ${imageName}`)
+        core.info(`⏭ skipping container push for ${imageName}`);
       }
 
-      await artifactHandler.storeImageNameAndTagAsync(imageName, fqImageName, imageTag);
-
+      await manifest.storeImageNameAndTagAsync(
+        imageName,
+        fqImageName,
+        imageTag
+      );
     } catch (error) {
       core.setFailed(error.message);
     }
-  }
-}
+  },
+};

@@ -324,7 +324,7 @@ var require_tunnel = __commonJS({
         function onFree() {
           self.emit("free", socket, options);
         }
-        function onCloseOrRemove(err) {
+        function onCloseOrRemove(err2) {
           self.removeSocket(socket);
           socket.removeListener("free", onFree);
           socket.removeListener("close", onCloseOrRemove);
@@ -731,9 +731,9 @@ var require_http_client = __commonJS({
       }
       requestRaw(info, data) {
         return new Promise((resolve, reject) => {
-          let callbackForResult = function(err, res) {
-            if (err) {
-              reject(err);
+          let callbackForResult = function(err2, res) {
+            if (err2) {
+              reject(err2);
             }
             resolve(res);
           };
@@ -746,10 +746,10 @@ var require_http_client = __commonJS({
           info.options.headers["Content-Length"] = Buffer.byteLength(data, "utf8");
         }
         let callbackCalled = false;
-        let handleResult = (err, res) => {
+        let handleResult = (err2, res) => {
           if (!callbackCalled) {
             callbackCalled = true;
-            onResult(err, res);
+            onResult(err2, res);
           }
         };
         let req = info.httpModule.request(info.options, (msg) => {
@@ -765,8 +765,8 @@ var require_http_client = __commonJS({
           }
           handleResult(new Error("Request timeout: " + info.options.path), null);
         });
-        req.on("error", function(err) {
-          handleResult(err, null);
+        req.on("error", function(err2) {
+          handleResult(err2, null);
         });
         if (data && typeof data === "string") {
           req.write(data, "utf8");
@@ -917,7 +917,7 @@ var require_http_client = __commonJS({
               response.result = obj;
             }
             response.headers = res.message.headers;
-          } catch (err) {
+          } catch (err2) {
           }
           if (statusCode > 299) {
             let msg;
@@ -928,9 +928,9 @@ var require_http_client = __commonJS({
             } else {
               msg = "Failed request: (" + statusCode + ")";
             }
-            let err = new HttpClientError(msg, statusCode);
-            err.result = response.result;
-            reject(err);
+            let err2 = new HttpClientError(msg, statusCode);
+            err2.result = response.result;
+            reject(err2);
           } else {
             resolve(response);
           }
@@ -1366,11 +1366,11 @@ var require_io_util = __commonJS({
       return __awaiter(this, void 0, void 0, function* () {
         try {
           yield exports.stat(fsPath);
-        } catch (err) {
-          if (err.code === "ENOENT") {
+        } catch (err2) {
+          if (err2.code === "ENOENT") {
             return false;
           }
-          throw err;
+          throw err2;
         }
         return true;
       });
@@ -1399,9 +1399,9 @@ var require_io_util = __commonJS({
         let stats = void 0;
         try {
           stats = yield exports.stat(filePath);
-        } catch (err) {
-          if (err.code !== "ENOENT") {
-            console.log(`Unexpected error attempting to determine if executable file exists '${filePath}': ${err}`);
+        } catch (err2) {
+          if (err2.code !== "ENOENT") {
+            console.log(`Unexpected error attempting to determine if executable file exists '${filePath}': ${err2}`);
           }
         }
         if (stats && stats.isFile()) {
@@ -1422,9 +1422,9 @@ var require_io_util = __commonJS({
           stats = void 0;
           try {
             stats = yield exports.stat(filePath);
-          } catch (err) {
-            if (err.code !== "ENOENT") {
-              console.log(`Unexpected error attempting to determine if executable file exists '${filePath}': ${err}`);
+          } catch (err2) {
+            if (err2.code !== "ENOENT") {
+              console.log(`Unexpected error attempting to determine if executable file exists '${filePath}': ${err2}`);
             }
           }
           if (stats && stats.isFile()) {
@@ -1438,8 +1438,8 @@ var require_io_util = __commonJS({
                     break;
                   }
                 }
-              } catch (err) {
-                console.log(`Unexpected error attempting to determine the actual case of the file '${filePath}': ${err}`);
+              } catch (err2) {
+                console.log(`Unexpected error attempting to determine the actual case of the file '${filePath}': ${err2}`);
               }
               return filePath;
             } else {
@@ -1605,23 +1605,23 @@ var require_io = __commonJS({
                 env: { inputPath }
               });
             }
-          } catch (err) {
-            if (err.code !== "ENOENT")
-              throw err;
+          } catch (err2) {
+            if (err2.code !== "ENOENT")
+              throw err2;
           }
           try {
             yield ioUtil.unlink(inputPath);
-          } catch (err) {
-            if (err.code !== "ENOENT")
-              throw err;
+          } catch (err2) {
+            if (err2.code !== "ENOENT")
+              throw err2;
           }
         } else {
           let isDir = false;
           try {
             isDir = yield ioUtil.isDirectory(inputPath);
-          } catch (err) {
-            if (err.code !== "ENOENT")
-              throw err;
+          } catch (err2) {
+            if (err2.code !== "ENOENT")
+              throw err2;
             return;
           }
           if (isDir) {
@@ -1878,8 +1878,8 @@ var require_toolrunner = __commonJS({
             n = s.indexOf(os.EOL);
           }
           return s;
-        } catch (err) {
-          this._debug(`error processing line. Failed with error ${err}`);
+        } catch (err2) {
+          this._debug(`error processing line. Failed with error ${err2}`);
           return "";
         }
       }
@@ -2080,8 +2080,8 @@ var require_toolrunner = __commonJS({
                 });
               });
             }
-            cp.on("error", (err) => {
-              state.processError = err.message;
+            cp.on("error", (err2) => {
+              state.processError = err2.message;
               state.processExited = true;
               state.processClosed = true;
               state.CheckComplete();
@@ -2346,68 +2346,80 @@ var require_exec = __commonJS({
   }
 });
 
-// actions/initialise/git.js
-var require_git = __commonJS({
-  "actions/initialise/git.js"(exports, module2) {
+// actions/common/docker.js
+var require_docker = __commonJS({
+  "actions/common/docker.js"(exports, module2) {
     var core = require_core();
     var exec = require_exec();
-    var getCommitShaAsync = async () => {
-      const gitCommitShaOutput = await exec.getExecOutput("git", [
-        "rev-parse",
-        "HEAD"
+    var buildKitEnabled = true;
+    var _executeDockerProcessAsync = async (args, options, strErrToStdOut = false) => {
+    };
+    var pullAsync = async (imageNameAndTag, ignorePullFailure = true) => {
+      core.info(`Attempting pull of image ${imageNameAndTag}`);
+      const exitCode = await exec.exec("docker", [
+        "pull",
+        "--quiet",
+        imageNameAndTag
       ]);
-      return gitCommitShaOutput.stdout.trim();
-    };
-    var getBranchName = () => {
-      let branchName = process.env.GITHUB_HEAD_REF;
-      if (!branchName) {
-        branchName = `${process.env.GITHUB_REF}#refs/heads/`;
+      if (exitCode == 0) {
+        return;
       }
-      return branchName;
-    };
-    var getMainBranchForkPointAsync = async () => {
-      if (process.env.ACT === "true") {
-        mainBranchPath = core.getInput("main_branch_name");
-      } else {
-        mainBranchPath = `remotes/origin/${core.getInput("main_branch_name")}`;
+      if (ignorePullFailure) {
+        core.info(`Container ${imageNameAndTag} was not available to be pulled.`);
+        return;
       }
-      const mergeBaseExecOutput = await exec.getExecOutput("git", [
-        "merge-base",
-        "--octopus",
-        mainBranchPath,
-        "HEAD"
-      ]);
-      return mergeBaseExecOutput.stdout.trim();
+      core.info(`Could not pull image (${imageNameAndTag}). Error: ${err}`);
+      throw Error(`docker pull ${imageNameAndTag} failed`);
     };
-    var getFileChangesInBranchAsync = async (originCommitSha, currentCommitSha) => {
-      if (!originCommitSha || !currentCommitSha) {
-        return [];
-      }
-      diffArgs = process.env.ACT === "true" ? ["--no-pager", "diff", "--name-only", `${originCommitSha}:./`] : [
-        "--no-pager",
-        "diff",
-        "--name-only",
-        `${originCommitSha}..${currentCommitSha}`
+    var getBuildArgsAsync = async (dockerfilePath, context, imageName, imageTag, additionalBuildArgs = []) => {
+      const buildArgs = [
+        "build",
+        "-t",
+        `${imageName}:latest`,
+        "-t",
+        `${imageName}:${imageTag}`,
+        "--cache-from",
+        `${imageName}:latest`
       ];
-      fileChangesInBranchOutput = await exec.getExecOutput("git", diffArgs);
-      fileChangesInBranch = fileChangesInBranchOutput.stdout.trim();
-      return fileChangesInBranch.split("\n");
+      for (const arg of additionalBuildArgs) {
+        buildArgs.push("--build-arg", arg);
+      }
+      if (buildKitEnabled) {
+        core.info("\u26A1 buildkit enabled \u26A1");
+        buildArgs.push("--build-arg", "BUILDKIT_INLINE_CACHE=1");
+      }
+      buildArgs.push("-f", dockerfilePath, context);
+      return buildArgs;
+    };
+    var buildAsync = async (dockerfilePath, contextPath, fqImageName, imageTag, additionalBuildArgs = []) => {
+      process.env.DOCKER_BUILDKIT = buildKitEnabled ? 1 : 0;
+      const buildArgs = await getBuildArgsAsync(dockerfilePath, contextPath, fqImageName, imageTag, additionalBuildArgs);
+      core.debug(`\u{1F433} docker ${buildArgs.join(" ")}`);
+      const output = await exec.getExecOutput("docker", buildArgs);
+      if (output.exitCode != 0) {
+        core.setFailed(`Failed to build docker image ${fqImageName} (dockerFile: ${dockerfilePath})`);
+      }
+    };
+    var runAsync = async (container, envVars) => {
+      core.info(`Running docker container ${container}`);
+      let environmentArgs = "";
+      for (const key of Object.keys(envVars || {})) {
+        environmentArgs += `-e ${key}=${envVars[key]} `;
+        core.info(`Adding environment var: ${key}`);
+      }
+      const runArgs = `run --rm ${environmentArgs}${container}`;
+      await _executeDockerProcessAsync(runArgs.split(" "));
+    };
+    var pushAsync = async (imageNameAndTag) => {
+      core.info(`Pushing image ${imageNameAndTag}`);
+      await _executeDockerProcessAsync(["push", imageNameAndTag]);
     };
     module2.exports = {
-      generateGitStateAsync: async () => {
-        const gitState = {
-          commitSha: "",
-          branchName: "",
-          mainBranchForkPoint: "",
-          fileChangesInBranch: []
-        };
-        gitState.commitSha = await getCommitShaAsync();
-        gitState.branchName = getBranchName();
-        gitState.buildNumber = process.env.GITHUB_RUN_ID;
-        gitState.mainBranchForkPoint = await getMainBranchForkPointAsync();
-        gitState.fileChangesInBranch = await getFileChangesInBranchAsync(gitState.mainBranchForkPoint, gitState.commitSha);
-        return gitState;
-      }
+      pullAsync,
+      getBuildArgsAsync,
+      buildAsync,
+      runAsync,
+      pushAsync
     };
   }
 });
@@ -2541,19 +2553,19 @@ var require_old = __commonJS({
       } else
         callback = missingCallback;
       return callback;
-      function debugCallback(err) {
-        if (err) {
-          backtrace.message = err.message;
-          err = backtrace;
-          missingCallback(err);
+      function debugCallback(err2) {
+        if (err2) {
+          backtrace.message = err2.message;
+          err2 = backtrace;
+          missingCallback(err2);
         }
       }
-      function missingCallback(err) {
-        if (err) {
+      function missingCallback(err2) {
+        if (err2) {
           if (process.throwDeprecation)
-            throw err;
+            throw err2;
           else if (!process.noDeprecation) {
-            var msg = "fs: missing callback " + (err.stack || err.message);
+            var msg = "fs: missing callback " + (err2.stack || err2.message);
             if (process.traceDeprecation)
               console.trace(msg);
             else
@@ -2667,9 +2679,9 @@ var require_old = __commonJS({
         base = m[0];
         previous = "";
         if (isWindows && !knownHard[base]) {
-          fs.lstat(base, function(err) {
-            if (err)
-              return cb(err);
+          fs.lstat(base, function(err2) {
+            if (err2)
+              return cb(err2);
             knownHard[base] = true;
             LOOP();
           });
@@ -2697,9 +2709,9 @@ var require_old = __commonJS({
         }
         return fs.lstat(base, gotStat);
       }
-      function gotStat(err, stat) {
-        if (err)
-          return cb(err);
+      function gotStat(err2, stat) {
+        if (err2)
+          return cb(err2);
         if (!stat.isSymbolicLink()) {
           knownHard[base] = true;
           if (cache)
@@ -2712,19 +2724,19 @@ var require_old = __commonJS({
             return gotTarget(null, seenLinks[id], base);
           }
         }
-        fs.stat(base, function(err2) {
-          if (err2)
-            return cb(err2);
-          fs.readlink(base, function(err3, target) {
+        fs.stat(base, function(err3) {
+          if (err3)
+            return cb(err3);
+          fs.readlink(base, function(err4, target) {
             if (!isWindows)
               seenLinks[id] = target;
-            gotTarget(err3, target);
+            gotTarget(err4, target);
           });
         });
       }
-      function gotTarget(err, target, base2) {
-        if (err)
-          return cb(err);
+      function gotTarget(err2, target, base2) {
+        if (err2)
+          return cb(err2);
         var resolvedLink = pathModule.resolve(previous, target);
         if (cache)
           cache[base2] = resolvedLink;
@@ -5184,23 +5196,23 @@ var require_tmp = __commonJS({
       const args = _parseArguments(options, callback), opts = args[0], cb = args[1];
       try {
         _assertAndSanitizeOptions(opts);
-      } catch (err) {
-        return cb(err);
+      } catch (err2) {
+        return cb(err2);
       }
       let tries = opts.tries;
       (function _getUniqueName() {
         try {
           const name = _generateTmpName(opts);
-          fs.stat(name, function(err) {
-            if (!err) {
+          fs.stat(name, function(err2) {
+            if (!err2) {
               if (tries-- > 0)
                 return _getUniqueName();
               return cb(new Error("Could not get a unique tmp filename, max tries reached " + name));
             }
             cb(null, name);
           });
-        } catch (err) {
-          cb(err);
+        } catch (err2) {
+          cb(err2);
         }
       })();
     }
@@ -5220,12 +5232,12 @@ var require_tmp = __commonJS({
     }
     function file(options, callback) {
       const args = _parseArguments(options, callback), opts = args[0], cb = args[1];
-      tmpName(opts, function _tmpNameCreated(err, name) {
-        if (err)
-          return cb(err);
-        fs.open(name, CREATE_FLAGS, opts.mode || FILE_MODE, function _fileCreated(err2, fd) {
-          if (err2)
-            return cb(err2);
+      tmpName(opts, function _tmpNameCreated(err2, name) {
+        if (err2)
+          return cb(err2);
+        fs.open(name, CREATE_FLAGS, opts.mode || FILE_MODE, function _fileCreated(err3, fd) {
+          if (err3)
+            return cb(err3);
           if (opts.discardDescriptor) {
             return fs.close(fd, function _discardCallback(possibleErr) {
               return cb(possibleErr, name, void 0, _prepareTmpFileRemoveCallback(name, -1, opts, false));
@@ -5254,12 +5266,12 @@ var require_tmp = __commonJS({
     }
     function dir(options, callback) {
       const args = _parseArguments(options, callback), opts = args[0], cb = args[1];
-      tmpName(opts, function _tmpNameCreated(err, name) {
-        if (err)
-          return cb(err);
-        fs.mkdir(name, opts.mode || DIR_MODE, function _dirCreated(err2) {
-          if (err2)
-            return cb(err2);
+      tmpName(opts, function _tmpNameCreated(err2, name) {
+        if (err2)
+          return cb(err2);
+        fs.mkdir(name, opts.mode || DIR_MODE, function _dirCreated(err3) {
+          if (err3)
+            return cb(err3);
           cb(null, name, _prepareTmpDirRemoveCallback(name, opts, false));
         });
       });
@@ -5274,9 +5286,9 @@ var require_tmp = __commonJS({
       };
     }
     function _removeFileAsync(fdPath, next) {
-      const _handler = function(err) {
-        if (err && !_isENOENT(err)) {
-          return next(err);
+      const _handler = function(err2) {
+        if (err2 && !_isENOENT(err2)) {
+          return next(err2);
         }
         next();
       };
@@ -5494,7 +5506,7 @@ var require_tmp_promise = __commonJS({
     var { promisify } = require("util");
     var tmp = require_tmp();
     module2.exports.fileSync = tmp.fileSync;
-    var fileWithOptions = promisify((options, cb) => tmp.file(options, (err, path, fd, cleanup) => err ? cb(err) : cb(void 0, { path, fd, cleanup: promisify(cleanup) })));
+    var fileWithOptions = promisify((options, cb) => tmp.file(options, (err2, path, fd, cleanup) => err2 ? cb(err2) : cb(void 0, { path, fd, cleanup: promisify(cleanup) })));
     module2.exports.file = async (options) => fileWithOptions(options);
     module2.exports.withFile = async function withFile(fn, options) {
       const { path, fd, cleanup } = await module2.exports.file(options);
@@ -5505,7 +5517,7 @@ var require_tmp_promise = __commonJS({
       }
     };
     module2.exports.dirSync = tmp.dirSync;
-    var dirWithOptions = promisify((options, cb) => tmp.dir(options, (err, path, cleanup) => err ? cb(err) : cb(void 0, { path, cleanup: promisify(cleanup) })));
+    var dirWithOptions = promisify((options, cb) => tmp.dir(options, (err2, path, cleanup) => err2 ? cb(err2) : cb(void 0, { path, cleanup: promisify(cleanup) })));
     module2.exports.dir = async (options) => dirWithOptions(options);
     module2.exports.withDir = async function withDir(fn, options) {
       const { path, cleanup } = await module2.exports.dir(options);
@@ -6940,11 +6952,37 @@ var require_artifact_client2 = __commonJS({
   }
 });
 
-// actions/initialise/uploader.js
-var require_uploader = __commonJS({
-  "actions/initialise/uploader.js"(exports, module2) {
+// actions/common/constants.js
+var require_constants = __commonJS({
+  "actions/common/constants.js"(exports, module2) {
+    module2.exports = {
+      buildArgContainerCommitSha: "COMMIT_SHA",
+      buildArgContainerBuildNumber: "BUILD_NUMBER",
+      inputImageName: "image_name",
+      inputDockerfile: "dockerfile",
+      inputContext: "context",
+      inputIncludes: "includes",
+      inputRegistry: "registry",
+      manifestGitStateKey: "manifest_git_state"
+    };
+  }
+});
+
+// actions/common/artifact-handler.js
+var require_artifact_handler = __commonJS({
+  "actions/common/artifact-handler.js"(exports, module2) {
     var artifact = require_artifact_client2();
     var core = require_core();
+    var fs = require("fs");
+    var constants = require_constants();
+    var downloadArtifactAsync = async (key) => {
+      const artifactClient = artifact.create();
+      const downloadOptions = {
+        createArtifactFolder: false
+      };
+      const downloadResponse = await artifactClient.downloadArtifact(key, "", downloadOptions);
+      core.info(`Artifact ${downloadResponse.artifactName} was downloaded to ${downloadResponse.downloadPath}`);
+    };
     module2.exports = {
       uploadArtifactAsync: async (key, path) => {
         const artifactClient = artifact.create();
@@ -6959,38 +6997,71 @@ var require_uploader = __commonJS({
         }
         core.info(`Artifact ${uploadResponse.artifactName} has been successfully uploaded!`);
         return true;
+      },
+      downloadArtifactAsync,
+      loadGitStateAsync: async () => {
+        await downloadArtifactAsync(constants.manifestGitStateKey);
+        const fileContents = await fs.promises.readFile(constants.manifestGitStateKey, { encoding: "utf8" });
+        core.info("read git state contents: " + fileContents);
+        return JSON.parse(fileContents);
       }
     };
   }
 });
 
-// actions/initialise/initialise.js
-var require_initialise = __commonJS({
-  "actions/initialise/initialise.js"(exports, module2) {
-    var fs = require("fs");
+// actions/common/image-namer.js
+var require_image_namer = __commonJS({
+  "actions/common/image-namer.js"(exports, module2) {
     var core = require_core();
-    var git = require_git();
-    var uploader = require_uploader();
-    var manifestGitStateKey = "manifest_git_state";
-    var runAsync2 = async () => {
-      try {
-        const gitState = await git.generateGitStateAsync();
-        core.debug("Generated git state: ", gitState);
-        await fs.promises.writeFile(manifestGitStateKey, JSON.stringify(gitState, null, 2));
-        if (!await uploader.uploadArtifactAsync(manifestGitStateKey, manifestGitStateKey)) {
-          throw Error("Unable to upload git state artifact");
+    var constants = require_constants();
+    module2.exports = {
+      loadFqImageName: (imageName) => {
+        let registry = core.getInput(constants.inputRegistry).trim();
+        if (registry != "" && !registry.endsWith("/")) {
+          registry += "/";
         }
-      } catch (error) {
-        core.setFailed(error.message);
+        if (process.env.ACT === "true") {
+          core.info("Setting container registry to empty string for local container builds");
+          registry = "";
+        }
+        return `${registry}${process.env.STACK_NAME}/${imageName}`;
+      },
+      generateImageTag: (gitState) => {
+        let imageTag = gitState.commitSha.substring(0, 7);
+        if (process.env.ACT === "true") {
+          core.info("Adding unix epoch to image tag for local builds");
+          imageTag += "-" + new Date().getTime();
+        }
+        return imageTag;
       }
     };
-    module2.exports = { runAsync: runAsync2 };
   }
 });
 
-// actions/initialise/index.js
-var { runAsync } = require_initialise();
-runAsync();
+// actions/docker-run/run.js
+var require_run = __commonJS({
+  "actions/docker-run/run.js"(exports, module2) {
+    var core = require_core();
+    var path = require("path");
+    var docker = require_docker();
+    var artifactHandler = require_artifact_handler();
+    var imageNamer = require_image_namer();
+    module2.exports = {
+      run: async () => {
+        const gitState = await artifactHandler.loadGitStateAsync();
+        const imageName = core.getInput("image_names");
+        const environment = core.getInput("environment");
+        const fqImageName = imageNamer.loadFqImageName(imageName);
+        const imageTag = imageNamer.generateImageTag(gitState);
+        await docker.runAsync(`${fqImageName}:${imageTag}`);
+      }
+    };
+  }
+});
+
+// actions/docker-run/index.js
+var { run } = require_run();
+run();
 /*!
  * Tmp
  *

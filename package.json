@@ -15,13 +15,22 @@
     "clean": "rimraf actions/dist && mkdirp actions/dist",
     "copy-actions-yml": "copyfiles -u 1 actions/**/action.yml actions/dist",
     "build": "esbuild actions/**/index.js --bundle --platform=node --target=node16 --outdir=actions/dist --outbase=actions",
-    "dist": "yarn run clean && yarn run copy-actions-yml && yarn run build"
+    "dist": "yarn run clean && yarn run copy-actions-yml && yarn run build",
+    "lint": "prettier --check .",
+    "format": "prettier --write ."
   },
   "devDependencies": {
     "copyfiles": "^2.4.1",
     "esbuild": "^0.14.14",
+    "husky": "^7.0.4",
     "mkdirp": "^1.0.4",
+    "prettier": "^2.5.1",
     "rimraf": "^3.0.2"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "prettier --write . && git add -u"
+    }
   },
   "jest": {
     "testPathIgnorePatterns": ["example-apps"]
