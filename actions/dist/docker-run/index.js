@@ -6963,8 +6963,7 @@ var require_constants = __commonJS({
       inputContext: "context",
       inputIncludes: "includes",
       inputRegistry: "registry",
-      manifestGitStateKey: "manifest_git_state",
-      manifestImagesKey: "manifest_images"
+      manifestGitStateKey: "manifest_git_state"
     };
   }
 });
@@ -6975,7 +6974,6 @@ var require_artifact_handler = __commonJS({
     var artifact = require_artifact_client2();
     var core = require_core();
     var fs = require("fs");
-    var path = require("path");
     var constants = require_constants();
     var downloadArtifactAsync = async (key) => {
       const artifactClient = artifact.create();
@@ -6985,30 +6983,27 @@ var require_artifact_handler = __commonJS({
       const downloadResponse = await artifactClient.downloadArtifact(key, "", downloadOptions);
       core.info(`Artifact ${downloadResponse.artifactName} was downloaded to ${downloadResponse.downloadPath}`);
     };
-    var uploadArtifactAsync = async (key, path2) => {
-      const artifactClient = artifact.create();
-      const options = {
-        continueOnError: false,
-        retentionDays: 1
-      };
-      const uploadResponse = await artifactClient.uploadArtifact(key, [path2], "./", options);
-      if (uploadResponse.failedItems.length > 0) {
-        core.setFailed(`An error was encountered when uploading ${uploadResponse.artifactName}. There were ${uploadResponse.failedItems.length} items that failed to upload.`);
-        return false;
-      }
-      core.info(`Artifact ${uploadResponse.artifactName} has been successfully uploaded!`);
-      return true;
-    };
     module2.exports = {
+      uploadArtifactAsync: async (key, path) => {
+        const artifactClient = artifact.create();
+        const options = {
+          continueOnError: false,
+          retentionDays: 1
+        };
+        const uploadResponse = await artifactClient.uploadArtifact(key, [path], "./", options);
+        if (uploadResponse.failedItems.length > 0) {
+          core.setFailed(`An error was encountered when uploading ${uploadResponse.artifactName}. There were ${uploadResponse.failedItems.length} items that failed to upload.`);
+          return false;
+        }
+        core.info(`Artifact ${uploadResponse.artifactName} has been successfully uploaded!`);
+        return true;
+      },
+      downloadArtifactAsync,
       loadGitStateAsync: async () => {
         await downloadArtifactAsync(constants.manifestGitStateKey);
         const fileContents = await fs.promises.readFile(constants.manifestGitStateKey, { encoding: "utf8" });
         core.info("read git state contents: " + fileContents);
         return JSON.parse(fileContents);
-      },
-      storeImageNameAndTagAsync: async (imageName, fqImageName, imageTag) => {
-        await fs.promises.writeFile(imageName, `${fqImageName}:${imageTag}`);
-        await uploadArtifactAsync(constants.manifestImagesKey, imageName);
       }
     };
   }
@@ -7054,11 +7049,11 @@ var require_run = __commonJS({
     module2.exports = {
       run: async () => {
         const gitState = await artifactHandler.loadGitStateAsync();
-        const imageName = core.getInput("image_name");
+        const imageName = core.getInput("image_names");
         const environment = core.getInput("environment");
         const fqImageName = imageNamer.loadFqImageName(imageName);
         const imageTag = imageNamer.generateImageTag(gitState);
-        docker.runAsync(`${fqImageName}:${imageTag}`);
+        await docker.runAsync(`${fqImageName}:${imageTag}`);
       }
     };
   }

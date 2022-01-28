@@ -5,6 +5,7 @@ const docker = require("@eroad/gh-common/docker");
 const artifactHandler = require("@eroad/gh-common/artifact-handler");
 const imageNamer = require("@eroad/gh-common/image-namer");
 const constants = require("@eroad/gh-common/constants");
+const manifest = require("@eroad/gh-common/manifest");
 
 module.exports = {
   build: async () => {
@@ -53,7 +54,7 @@ module.exports = {
         core.info(`⏭ skipping container push for ${imageName}`);
       }
 
-      await artifactHandler.storeImageNameAndTagAsync(
+      await manifest.storeImageNameAndTagAsync(
         imageName,
         fqImageName,
         imageTag
