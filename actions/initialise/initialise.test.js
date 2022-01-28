@@ -17,10 +17,11 @@ describe("initialise", () => {
   });
 
   it("fetches the git state", async () => {
-
     await runAsync();
     expect(git.generateGitStateAsync).toHaveBeenCalledTimes(1);
-    expect(git.generateGitStateAsync).toHaveBeenCalledWith(inputMainBranchNameValue);
+    expect(git.generateGitStateAsync).toHaveBeenCalledWith(
+      inputMainBranchNameValue
+    );
   });
 
   it("persists the git state", async () => {

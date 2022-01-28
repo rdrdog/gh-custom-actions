@@ -31,60 +31,57 @@ beforeEach(() => {
 });
 
 describe("generateGitStateAsync", () => {
-  const mainBranchName = 'main';
+  const mainBranchName = "main";
 
   beforeEach(() => {
-    exec.getExecOutput.mockResolvedValue({stdout: ''});
+    exec.getExecOutput.mockResolvedValue({ stdout: "" });
   });
 
   afterEach(() => {
-    process.env.GITHUB_HEAD_REF = '';
-    process.env.GITHUB_REF = '';
-    process.env.GITHUB_RUN_ID = '';
+    process.env.GITHUB_HEAD_REF = "";
+    process.env.GITHUB_REF = "";
+    process.env.GITHUB_RUN_ID = "";
   });
 
   it("fetches the commit sha", async () => {
-    const execOutput = 'abcdef123 \n'; // add a space and newline to the end to make sure it's trimmed
-    exec.getExecOutput.mockResolvedValue({stdout: execOutput});
+    const execOutput = "abcdef123 \n"; // add a space and newline to the end to make sure it's trimmed
+    exec.getExecOutput.mockResolvedValue({ stdout: execOutput });
 
     const result = await git.generateGitStateAsync(mainBranchName);
 
-    expect(result.commitSha).toBe('abcdef123');
+    expect(result.commitSha).toBe("abcdef123");
   });
 
-  describe('gets the branch name', () => {
-
+  describe("gets the branch name", () => {
     it("gets the branch name from GITHUB_HEAD_REF", async () => {
-      process.env.GITHUB_HEAD_REF = 'main';
+      process.env.GITHUB_HEAD_REF = "main";
 
       const result = await git.generateGitStateAsync(mainBranchName);
 
-      expect(result.branchName).toBe('main');
+      expect(result.branchName).toBe("main");
     });
 
     it("gets the branch name from GITHUB_REF if GITHUB_HEAD_REF is empty", async () => {
-      process.env.GITHUB_REF = 'thing';
+      process.env.GITHUB_REF = "thing";
 
       const result = await git.generateGitStateAsync(mainBranchName);
 
-      expect(result.branchName).toBe('thing#refs/heads/');
+      expect(result.branchName).toBe("thing#refs/heads/");
     });
-
   });
 
   it("gets the build number from GITHUB_RUN_ID", async () => {
-    process.env.GITHUB_RUN_ID = '123';
+    process.env.GITHUB_RUN_ID = "123";
 
     const result = await git.generateGitStateAsync(mainBranchName);
 
-    expect(result.buildNumber).toBe('123');
+    expect(result.buildNumber).toBe("123");
   });
 
-  describe('fetches the main branch fork point', () => {
-
+  describe("fetches the main branch fork point", () => {
     beforeEach(() => {
-      const execOutput = 'abcdef123 \n'; // add a space and newline to the end to make sure it's trimmed
-      exec.getExecOutput.mockResolvedValue({stdout: execOutput});
+      const execOutput = "abcdef123 \n"; // add a space and newline to the end to make sure it's trimmed
+      exec.getExecOutput.mockResolvedValue({ stdout: execOutput });
     });
 
     it("uses the branch name as the mainBranchPath when running locally", async () => {
@@ -92,8 +89,8 @@ describe("generateGitStateAsync", () => {
 
       const result = await git.generateGitStateAsync(mainBranchName);
 
-      expect(result.mainBranchForkPoint).toBe('abcdef123');
-      expect(exec.getExecOutput).toHaveBeenCalledWith('git', [
+      expect(result.mainBranchForkPoint).toBe("abcdef123");
+      expect(exec.getExecOutput).toHaveBeenCalledWith("git", [
         "merge-base",
         "--octopus",
         mainBranchName,
@@ -104,37 +101,42 @@ describe("generateGitStateAsync", () => {
     it("uses the branch name with remotes/origin prefix as the mainBranchPath when running in CI", async () => {
       const result = await git.generateGitStateAsync(mainBranchName);
 
-      expect(result.mainBranchForkPoint).toBe('abcdef123');
-      expect(exec.getExecOutput).toHaveBeenCalledWith('git', [
+      expect(result.mainBranchForkPoint).toBe("abcdef123");
+      expect(exec.getExecOutput).toHaveBeenCalledWith("git", [
         "merge-base",
         "--octopus",
         "remotes/origin/main",
         "HEAD",
       ]);
     });
-
   });
 
-  describe('getFileChangesInBranchAsync', () => {
-
-    const originCommitSha = 'abc';
-    const currentCommitSha = '123';
+  describe("getFileChangesInBranchAsync", () => {
+    const originCommitSha = "abc";
+    const currentCommitSha = "123";
 
     beforeEach(() => {
-      const execOutput = 'file1.js\nfile2.js\nfile3.js';
-      exec.getExecOutput.mockResolvedValue({stdout: execOutput});
+      const execOutput = "file1.js\nfile2.js\nfile3.js";
+      exec.getExecOutput.mockResolvedValue({ stdout: execOutput });
     });
 
     it("returns an empty array if either commit sha is empty", async () => {
-      expect(await git._getFileChangesInBranchAsync('', currentCommitSha)).toStrictEqual([]);
-      expect(await git._getFileChangesInBranchAsync(originCommitSha, '')).toStrictEqual([]);
-      expect(await git._getFileChangesInBranchAsync('', '')).toStrictEqual([]);
+      expect(
+        await git._getFileChangesInBranchAsync("", currentCommitSha)
+      ).toStrictEqual([]);
+      expect(
+        await git._getFileChangesInBranchAsync(originCommitSha, "")
+      ).toStrictEqual([]);
+      expect(await git._getFileChangesInBranchAsync("", "")).toStrictEqual([]);
     });
 
     it("returns an array of files from the git diff output", async () => {
-      const result = await git._getFileChangesInBranchAsync(originCommitSha, currentCommitSha);
+      const result = await git._getFileChangesInBranchAsync(
+        originCommitSha,
+        currentCommitSha
+      );
 
-      expect(result).toStrictEqual(['file1.js', 'file2.js', 'file3.js']);
+      expect(result).toStrictEqual(["file1.js", "file2.js", "file3.js"]);
     });
 
     it("uses the origin sha when running in local", async () => {
@@ -142,26 +144,25 @@ describe("generateGitStateAsync", () => {
 
       await git._getFileChangesInBranchAsync(originCommitSha, currentCommitSha);
 
-      expect(exec.getExecOutput).toHaveBeenCalledWith('git', [
+      expect(exec.getExecOutput).toHaveBeenCalledWith("git", [
         "--no-pager",
         "diff",
         "--name-only",
-        "abc:./"
+        "abc:./",
       ]);
     });
 
     it("uses the diff between the origin and the current commit when running in CI", async () => {
       await git._getFileChangesInBranchAsync(originCommitSha, currentCommitSha);
 
-      expect(exec.getExecOutput).toHaveBeenCalledWith('git', [
+      expect(exec.getExecOutput).toHaveBeenCalledWith("git", [
         "--no-pager",
         "diff",
         "--name-only",
-        "abc..123"
+        "abc..123",
       ]);
     });
   });
-
 });
 
 describe("persistGitStateAsync", () => {
@@ -194,11 +195,8 @@ describe("persistGitStateAsync", () => {
   it("throws when the upload fails", async () => {
     artifactHandler.uploadArtifactAsync.mockResolvedValue(false);
 
-    await expect(git.persistGitStateAsync(gitState))
-      .rejects
-      .toThrow();
+    await expect(git.persistGitStateAsync(gitState)).rejects.toThrow();
   });
-
 });
 
 describe("loadGitStateAsync", () => {
@@ -213,15 +211,18 @@ describe("loadGitStateAsync", () => {
     await git.loadGitStateAsync();
 
     expect(artifactHandler.downloadArtifactAsync).toHaveBeenCalledTimes(1);
-    expect(artifactHandler.downloadArtifactAsync).toHaveBeenCalledWith("manifest_git_state");
+    expect(artifactHandler.downloadArtifactAsync).toHaveBeenCalledWith(
+      "manifest_git_state"
+    );
   });
 
   it("reads and returns the git state", async () => {
     const result = await git.loadGitStateAsync();
 
     expect(fs.promises.readFile).toHaveBeenCalledTimes(1);
-    expect(fs.promises.readFile).toHaveBeenCalledWith("manifest_git_state", { encoding: "utf8" });
-    expect(result.branchName).toBe('main');
+    expect(fs.promises.readFile).toHaveBeenCalledWith("manifest_git_state", {
+      encoding: "utf8",
+    });
+    expect(result.branchName).toBe("main");
   });
-
 });

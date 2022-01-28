@@ -6998,7 +6998,9 @@ var require_git = __commonJS({
       },
       loadGitStateAsync: async () => {
         await artifactHandler.downloadArtifactAsync(manifestGitStateKey);
-        const fileContents = await fs.promises.readFile(manifestGitStateKey, { encoding: "utf8" });
+        const fileContents = await fs.promises.readFile(manifestGitStateKey, {
+          encoding: "utf8"
+        });
         core.info("read git state contents: " + fileContents);
         return JSON.parse(fileContents);
       }

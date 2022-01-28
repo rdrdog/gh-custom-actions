@@ -46,6 +46,5 @@ module.exports = {
     core.info(
       `Artifact ${downloadResponse.artifactName} was downloaded to ${downloadResponse.downloadPath}`
     );
-  }
-
+  },
 };

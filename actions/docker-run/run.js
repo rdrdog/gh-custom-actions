@@ -14,6 +14,6 @@ module.exports = {
     const imageTag = imageNamer.generateImageTag(gitState);
 
     // loop here
-    await docker.runAsync(`${fqImageName}:${imageTag}`)
+    await docker.runAsync(`${fqImageName}:${imageTag}`);
   },
 };

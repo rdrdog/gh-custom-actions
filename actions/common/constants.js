@@ -8,6 +8,5 @@ module.exports = {
   inputIncludes: "includes",
   inputRegistry: "registry",
 
-
-  isCI: () => process.env.ACT !== "true"
+  isCI: () => process.env.ACT !== "true",
 };

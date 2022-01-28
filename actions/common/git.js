@@ -50,15 +50,14 @@ const getFileChangesInBranchAsync = async (
     return [];
   }
 
-  diffArgs =
-    constants.isCI()
-      ? [
-          "--no-pager",
-          "diff",
-          "--name-only",
-          `${originCommitSha}..${currentCommitSha}`,
-        ]
-      : ["--no-pager", "diff", "--name-only", `${originCommitSha}:./`];
+  diffArgs = constants.isCI()
+    ? [
+        "--no-pager",
+        "diff",
+        "--name-only",
+        `${originCommitSha}..${currentCommitSha}`,
+      ]
+    : ["--no-pager", "diff", "--name-only", `${originCommitSha}:./`];
 
   fileChangesInBranchOutput = await exec.getExecOutput("git", diffArgs);
   fileChangesInBranch = fileChangesInBranchOutput.stdout.trim();
@@ -78,7 +77,9 @@ module.exports = {
     gitState.commitSha = await getCommitShaAsync();
     gitState.branchName = getBranchName();
     gitState.buildNumber = process.env.GITHUB_RUN_ID;
-    gitState.mainBranchForkPoint = await getMainBranchForkPointAsync(mainBranchName);
+    gitState.mainBranchForkPoint = await getMainBranchForkPointAsync(
+      mainBranchName
+    );
     gitState.fileChangesInBranch = await getFileChangesInBranchAsync(
       gitState.mainBranchForkPoint,
       gitState.commitSha
@@ -90,7 +91,6 @@ module.exports = {
   },
 
   persistGitStateAsync: async (gitState) => {
-
     // Write the git state to file:
     await fs.promises.writeFile(
       manifestGitStateKey,
@@ -109,10 +109,9 @@ module.exports = {
 
   loadGitStateAsync: async () => {
     await artifactHandler.downloadArtifactAsync(manifestGitStateKey);
-    const fileContents = await fs.promises.readFile(
-      manifestGitStateKey,
-      { encoding: "utf8" }
-    );
+    const fileContents = await fs.promises.readFile(manifestGitStateKey, {
+      encoding: "utf8",
+    });
     core.info("read git state contents: " + fileContents);
 
     // gitState contains these fields:
@@ -125,5 +124,5 @@ module.exports = {
     // };
 
     return JSON.parse(fileContents);
-  }
+  },
 };
