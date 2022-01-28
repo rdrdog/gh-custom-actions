@@ -3,6 +3,7 @@ const exec = require("@actions/exec");
 const fs = require("fs");
 
 const artifactHandler = require("./artifact-handler");
+const constants = require("./constants");
 
 const manifestGitStateKey = "manifest_git_state";
 
@@ -25,10 +26,10 @@ const getBranchName = () => {
 
 const getMainBranchForkPointAsync = async (mainBranchName) => {
   // Get main branch fork point
-  if (process.env.ACT === "true") {
-    mainBranchPath = mainBranchName;
-  } else {
+  if (constants.isCI()) {
     mainBranchPath = `remotes/origin/${mainBranchName}`;
+  } else {
+    mainBranchPath = mainBranchName;
   }
 
   const mergeBaseExecOutput = await exec.getExecOutput("git", [
@@ -50,14 +51,14 @@ const getFileChangesInBranchAsync = async (
   }
 
   diffArgs =
-    process.env.ACT === "true"
-      ? ["--no-pager", "diff", "--name-only", `${originCommitSha}:./`]
-      : [
+    constants.isCI()
+      ? [
           "--no-pager",
           "diff",
           "--name-only",
           `${originCommitSha}..${currentCommitSha}`,
-        ];
+        ]
+      : ["--no-pager", "diff", "--name-only", `${originCommitSha}:./`];
 
   fileChangesInBranchOutput = await exec.getExecOutput("git", diffArgs);
   fileChangesInBranch = fileChangesInBranchOutput.stdout.trim();

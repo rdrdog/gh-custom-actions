@@ -2,10 +2,12 @@ const fs = require("fs");
 const exec = require("@actions/exec");
 
 const artifactHandler = require("./artifact-handler");
+const constants = require("./constants");
 
 jest.mock("@actions/core");
 jest.mock("@actions/exec");
 jest.mock("./artifact-handler");
+jest.mock("./constants");
 
 jest.mock("fs", () => {
   const originalModule = jest.requireActual("fs");
@@ -23,17 +25,19 @@ jest.mock("fs", () => {
 
 const git = require("./git");
 
+beforeEach(() => {
+  jest.resetAllMocks();
+  constants.isCI.mockReturnValue(true);
+});
 
 describe("generateGitStateAsync", () => {
   const mainBranchName = 'main';
 
   beforeEach(() => {
-    jest.resetAllMocks();
     exec.getExecOutput.mockResolvedValue({stdout: ''});
   });
 
   afterEach(() => {
-    process.env.ACT = '';
     process.env.GITHUB_HEAD_REF = '';
     process.env.GITHUB_REF = '';
     process.env.GITHUB_RUN_ID = '';
@@ -84,7 +88,7 @@ describe("generateGitStateAsync", () => {
     });
 
     it("uses the branch name as the mainBranchPath when running locally", async () => {
-      process.env.ACT = "true";
+      constants.isCI.mockReturnValue(false);
 
       const result = await git.generateGitStateAsync(mainBranchName);
 
@@ -134,7 +138,7 @@ describe("generateGitStateAsync", () => {
     });
 
     it("uses the origin sha when running in local", async () => {
-      process.env.ACT = "true";
+      constants.isCI.mockReturnValue(false);
 
       await git._getFileChangesInBranchAsync(originCommitSha, currentCommitSha);
 

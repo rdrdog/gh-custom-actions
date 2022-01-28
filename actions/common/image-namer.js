@@ -8,7 +8,7 @@ module.exports = {
     if (registry != "" && !registry.endsWith("/")) {
       registry += "/";
     }
-    if (process.env.ACT === "true") {
+    if (!constants.isCI()) {
       core.info(
         "Setting container registry to empty string for local container builds"
       );
@@ -21,7 +21,7 @@ module.exports = {
   generateImageTag: (gitState) => {
     // Define out image tag
     let imageTag = gitState.commitSha.substring(0, 7);
-    if (process.env.ACT === "true") {
+    if (!constants.isCI()) {
       core.info("Adding unix epoch to image tag for local builds");
       imageTag += "-" + new Date().getTime();
     }

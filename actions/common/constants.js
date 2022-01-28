@@ -6,5 +6,8 @@ module.exports = {
   inputDockerfile: "dockerfile",
   inputContext: "context",
   inputIncludes: "includes",
-  inputRegistry: "registry"
+  inputRegistry: "registry",
+
+
+  isCI: () => process.env.ACT !== "true"
 };

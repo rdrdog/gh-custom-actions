@@ -6984,6 +6984,22 @@ var require_artifact_handler = __commonJS({
   }
 });
 
+// actions/common/constants.js
+var require_constants = __commonJS({
+  "actions/common/constants.js"(exports, module2) {
+    module2.exports = {
+      buildArgContainerCommitSha: "COMMIT_SHA",
+      buildArgContainerBuildNumber: "BUILD_NUMBER",
+      inputImageName: "image_name",
+      inputDockerfile: "dockerfile",
+      inputContext: "context",
+      inputIncludes: "includes",
+      inputRegistry: "registry",
+      isCI: () => process.env.ACT !== "true"
+    };
+  }
+});
+
 // actions/common/git.js
 var require_git = __commonJS({
   "actions/common/git.js"(exports, module2) {
@@ -6991,6 +7007,7 @@ var require_git = __commonJS({
     var exec = require_exec();
     var fs = require("fs");
     var artifactHandler = require_artifact_handler();
+    var constants = require_constants();
     var manifestGitStateKey = "manifest_git_state";
     var getCommitShaAsync = async () => {
       const gitCommitShaOutput = await exec.getExecOutput("git", [
@@ -7007,10 +7024,10 @@ var require_git = __commonJS({
       return branchName;
     };
     var getMainBranchForkPointAsync = async (mainBranchName) => {
-      if (process.env.ACT === "true") {
-        mainBranchPath = mainBranchName;
-      } else {
+      if (constants.isCI()) {
         mainBranchPath = `remotes/origin/${mainBranchName}`;
+      } else {
+        mainBranchPath = mainBranchName;
       }
       const mergeBaseExecOutput = await exec.getExecOutput("git", [
         "merge-base",
@@ -7024,12 +7041,12 @@ var require_git = __commonJS({
       if (!originCommitSha || !currentCommitSha) {
         return [];
       }
-      diffArgs = process.env.ACT === "true" ? ["--no-pager", "diff", "--name-only", `${originCommitSha}:./`] : [
+      diffArgs = constants.isCI() ? [
         "--no-pager",
         "diff",
         "--name-only",
         `${originCommitSha}..${currentCommitSha}`
-      ];
+      ] : ["--no-pager", "diff", "--name-only", `${originCommitSha}:./`];
       fileChangesInBranchOutput = await exec.getExecOutput("git", diffArgs);
       fileChangesInBranch = fileChangesInBranchOutput.stdout.trim();
       return fileChangesInBranch.split("\n");
@@ -7067,21 +7084,6 @@ var require_git = __commonJS({
   }
 });
 
-// actions/common/constants.js
-var require_constants = __commonJS({
-  "actions/common/constants.js"(exports, module2) {
-    module2.exports = {
-      buildArgContainerCommitSha: "COMMIT_SHA",
-      buildArgContainerBuildNumber: "BUILD_NUMBER",
-      inputImageName: "image_name",
-      inputDockerfile: "dockerfile",
-      inputContext: "context",
-      inputIncludes: "includes",
-      inputRegistry: "registry"
-    };
-  }
-});
-
 // actions/common/image-namer.js
 var require_image_namer = __commonJS({
   "actions/common/image-namer.js"(exports, module2) {
@@ -7093,7 +7095,7 @@ var require_image_namer = __commonJS({
         if (registry != "" && !registry.endsWith("/")) {
           registry += "/";
         }
-        if (process.env.ACT === "true") {
+        if (!constants.isCI()) {
           core.info("Setting container registry to empty string for local container builds");
           registry = "";
         }
@@ -7101,7 +7103,7 @@ var require_image_namer = __commonJS({
       },
       generateImageTag: (gitState) => {
         let imageTag = gitState.commitSha.substring(0, 7);
-        if (process.env.ACT === "true") {
+        if (!constants.isCI()) {
           core.info("Adding unix epoch to image tag for local builds");
           imageTag += "-" + new Date().getTime();
         }

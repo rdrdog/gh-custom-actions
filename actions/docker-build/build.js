@@ -22,7 +22,7 @@ module.exports = {
       // - TODO: determine if container should be build
 
       // - pull latest image for cache
-      if (process.env.ACT !== "true") {
+      if (constants.isCI()) {
         await docker.pullAsync(`${imageTag}:latest`);
       }
 
@@ -47,7 +47,7 @@ module.exports = {
         buildArgs
       );
 
-      if (process.env.ACT !== "true") {
+      if (constants.isCI()) {
         await docker.pushAsync(`${fqImageName}:${imageTag}`);
         await docker.pushAsync(`${fqImageName}:latest`);
       } else {
