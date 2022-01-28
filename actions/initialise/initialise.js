@@ -1,7 +1,7 @@
 const fs = require("fs");
 const core = require("@actions/core");
-const git = require("./git");
-const uploader = require("./uploader");
+const artifactHandler = require("@eroad/gh-common/artifact-handler");
+const git = require("@eroad/gh-common/git");
 
 const manifestGitStateKey = "manifest_git_state";
 
@@ -18,7 +18,7 @@ const runAsync = async () => {
     );
 
     if (
-      !(await uploader.uploadArtifactAsync(
+      !(await artifactHandler.uploadArtifactAsync(
         manifestGitStateKey,
         manifestGitStateKey
       ))

@@ -1,11 +1,11 @@
 const core = require("@actions/core");
 const fs = require("fs");
-const git = require("./git");
-const uploader = require("./uploader");
+const artifactHandler = require("@eroad/gh-common/artifact-handler");
+const git = require("@eroad/gh-common/git");
 
 jest.mock("@actions/core");
-jest.mock("./git");
-jest.mock("./uploader");
+jest.mock("@eroad/gh-common/artifact-handler");
+jest.mock("@eroad/gh-common/git");
 
 jest.mock("fs", () => {
   const originalModule = jest.requireActual("fs");
@@ -30,7 +30,7 @@ describe("initialise", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     git.generateGitStateAsync.mockResolvedValue(gitState);
-    uploader.uploadArtifactAsync.mockResolvedValue(true);
+    artifactHandler.uploadArtifactAsync.mockResolvedValue(true);
   });
 
   it("fetches the git state", async () => {
@@ -50,15 +50,15 @@ describe("initialise", () => {
   it("uploads the git state as an artifact", async () => {
     await runAsync();
 
-    expect(uploader.uploadArtifactAsync).toHaveBeenCalledTimes(1);
-    expect(uploader.uploadArtifactAsync).toHaveBeenCalledWith(
+    expect(artifactHandler.uploadArtifactAsync).toHaveBeenCalledTimes(1);
+    expect(artifactHandler.uploadArtifactAsync).toHaveBeenCalledWith(
       "manifest_git_state",
       "manifest_git_state"
     );
   });
 
   it("fails when the upload fails", async () => {
-    uploader.uploadArtifactAsync.mockResolvedValue(false);
+    artifactHandler.uploadArtifactAsync.mockResolvedValue(false);
 
     await runAsync();
 
