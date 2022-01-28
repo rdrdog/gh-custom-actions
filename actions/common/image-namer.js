@@ -2,9 +2,15 @@ const core = require("@actions/core");
 const constants = require("./constants");
 
 module.exports = {
-  loadFqImageName: (imageName) => {
-    let registry = core.getInput(constants.inputRegistry).trim();
+  loadFqImageName: (registry, imageName) => {
+    if (!process.env.STACK_NAME) {
+      throw new Error(
+        "STACK_NAME env var must be defined for generating container image names"
+      );
+    }
+
     // set the container registry to have a trailing slash, unless it is empty
+    registry = registry.trim();
     if (registry != "" && !registry.endsWith("/")) {
       registry += "/";
     }
