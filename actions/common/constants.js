@@ -6,7 +6,5 @@ module.exports = {
   inputDockerfile: "dockerfile",
   inputContext: "context",
   inputIncludes: "includes",
-  inputRegistry: "registry",
-
-  manifestGitStateKey: "manifest_git_state",
+  inputRegistry: "registry"
 };

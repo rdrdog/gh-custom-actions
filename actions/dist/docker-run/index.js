@@ -6952,37 +6952,11 @@ var require_artifact_client2 = __commonJS({
   }
 });
 
-// actions/common/constants.js
-var require_constants = __commonJS({
-  "actions/common/constants.js"(exports, module2) {
-    module2.exports = {
-      buildArgContainerCommitSha: "COMMIT_SHA",
-      buildArgContainerBuildNumber: "BUILD_NUMBER",
-      inputImageName: "image_name",
-      inputDockerfile: "dockerfile",
-      inputContext: "context",
-      inputIncludes: "includes",
-      inputRegistry: "registry",
-      manifestGitStateKey: "manifest_git_state"
-    };
-  }
-});
-
 // actions/common/artifact-handler.js
 var require_artifact_handler = __commonJS({
   "actions/common/artifact-handler.js"(exports, module2) {
     var artifact = require_artifact_client2();
     var core = require_core();
-    var fs = require("fs");
-    var constants = require_constants();
-    var downloadArtifactAsync = async (key) => {
-      const artifactClient = artifact.create();
-      const downloadOptions = {
-        createArtifactFolder: false
-      };
-      const downloadResponse = await artifactClient.downloadArtifact(key, "", downloadOptions);
-      core.info(`Artifact ${downloadResponse.artifactName} was downloaded to ${downloadResponse.downloadPath}`);
-    };
     module2.exports = {
       uploadArtifactAsync: async (key, path) => {
         const artifactClient = artifact.create();
@@ -6998,13 +6972,112 @@ var require_artifact_handler = __commonJS({
         core.info(`Artifact ${uploadResponse.artifactName} has been successfully uploaded!`);
         return true;
       },
-      downloadArtifactAsync,
+      downloadArtifactAsync: async (key) => {
+        const artifactClient = artifact.create();
+        const downloadOptions = {
+          createArtifactFolder: false
+        };
+        const downloadResponse = await artifactClient.downloadArtifact(key, "", downloadOptions);
+        core.info(`Artifact ${downloadResponse.artifactName} was downloaded to ${downloadResponse.downloadPath}`);
+      }
+    };
+  }
+});
+
+// actions/common/git.js
+var require_git = __commonJS({
+  "actions/common/git.js"(exports, module2) {
+    var core = require_core();
+    var exec = require_exec();
+    var fs = require("fs");
+    var artifactHandler = require_artifact_handler();
+    var manifestGitStateKey = "manifest_git_state";
+    var getCommitShaAsync = async () => {
+      const gitCommitShaOutput = await exec.getExecOutput("git", [
+        "rev-parse",
+        "HEAD"
+      ]);
+      return gitCommitShaOutput.stdout.trim();
+    };
+    var getBranchName = () => {
+      let branchName = process.env.GITHUB_HEAD_REF;
+      if (!branchName) {
+        branchName = `${process.env.GITHUB_REF}#refs/heads/`;
+      }
+      return branchName;
+    };
+    var getMainBranchForkPointAsync = async (mainBranchName) => {
+      if (process.env.ACT === "true") {
+        mainBranchPath = mainBranchName;
+      } else {
+        mainBranchPath = `remotes/origin/${mainBranchName}`;
+      }
+      const mergeBaseExecOutput = await exec.getExecOutput("git", [
+        "merge-base",
+        "--octopus",
+        mainBranchPath,
+        "HEAD"
+      ]);
+      return mergeBaseExecOutput.stdout.trim();
+    };
+    var getFileChangesInBranchAsync = async (originCommitSha, currentCommitSha) => {
+      if (!originCommitSha || !currentCommitSha) {
+        return [];
+      }
+      diffArgs = process.env.ACT === "true" ? ["--no-pager", "diff", "--name-only", `${originCommitSha}:./`] : [
+        "--no-pager",
+        "diff",
+        "--name-only",
+        `${originCommitSha}..${currentCommitSha}`
+      ];
+      fileChangesInBranchOutput = await exec.getExecOutput("git", diffArgs);
+      fileChangesInBranch = fileChangesInBranchOutput.stdout.trim();
+      return fileChangesInBranch.split("\n");
+    };
+    module2.exports = {
+      _getFileChangesInBranchAsync: getFileChangesInBranchAsync,
+      generateGitStateAsync: async (mainBranchName) => {
+        const gitState = {
+          commitSha: "",
+          branchName: "",
+          mainBranchForkPoint: "",
+          fileChangesInBranch: []
+        };
+        gitState.commitSha = await getCommitShaAsync();
+        gitState.branchName = getBranchName();
+        gitState.buildNumber = process.env.GITHUB_RUN_ID;
+        gitState.mainBranchForkPoint = await getMainBranchForkPointAsync(mainBranchName);
+        gitState.fileChangesInBranch = await getFileChangesInBranchAsync(gitState.mainBranchForkPoint, gitState.commitSha);
+        core.debug("Generated git state: ", gitState);
+        return gitState;
+      },
+      persistGitStateAsync: async (gitState) => {
+        await fs.promises.writeFile(manifestGitStateKey, JSON.stringify(gitState, null, 2));
+        if (!await artifactHandler.uploadArtifactAsync(manifestGitStateKey, manifestGitStateKey)) {
+          throw Error("Unable to upload git state artifact");
+        }
+      },
       loadGitStateAsync: async () => {
-        await downloadArtifactAsync(constants.manifestGitStateKey);
-        const fileContents = await fs.promises.readFile(constants.manifestGitStateKey, { encoding: "utf8" });
+        await artifactHandler.downloadArtifactAsync(manifestGitStateKey);
+        const fileContents = await fs.promises.readFile(manifestGitStateKey, { encoding: "utf8" });
         core.info("read git state contents: " + fileContents);
         return JSON.parse(fileContents);
       }
+    };
+  }
+});
+
+// actions/common/constants.js
+var require_constants = __commonJS({
+  "actions/common/constants.js"(exports, module2) {
+    module2.exports = {
+      buildArgContainerCommitSha: "COMMIT_SHA",
+      buildArgContainerBuildNumber: "BUILD_NUMBER",
+      inputImageName: "image_name",
+      inputDockerfile: "dockerfile",
+      inputContext: "context",
+      inputIncludes: "includes",
+      inputRegistry: "registry"
     };
   }
 });
@@ -7042,13 +7115,12 @@ var require_image_namer = __commonJS({
 var require_run = __commonJS({
   "actions/docker-run/run.js"(exports, module2) {
     var core = require_core();
-    var path = require("path");
     var docker = require_docker();
-    var artifactHandler = require_artifact_handler();
+    var git = require_git();
     var imageNamer = require_image_namer();
     module2.exports = {
       run: async () => {
-        const gitState = await artifactHandler.loadGitStateAsync();
+        const gitState = await git.loadGitStateAsync();
         const imageName = core.getInput("image_names");
         const environment = core.getInput("environment");
         const fqImageName = imageNamer.loadFqImageName(imageName);

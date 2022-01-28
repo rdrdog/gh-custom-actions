@@ -1,5 +1,10 @@
 const core = require("@actions/core");
 const exec = require("@actions/exec");
+const fs = require("fs");
+
+const artifactHandler = require("./artifact-handler");
+
+const manifestGitStateKey = "manifest_git_state";
 
 const getCommitShaAsync = async () => {
   const gitCommitShaOutput = await exec.getExecOutput("git", [
@@ -18,12 +23,12 @@ const getBranchName = () => {
   return branchName;
 };
 
-const getMainBranchForkPointAsync = async () => {
+const getMainBranchForkPointAsync = async (mainBranchName) => {
   // Get main branch fork point
   if (process.env.ACT === "true") {
-    mainBranchPath = core.getInput("main_branch_name");
+    mainBranchPath = mainBranchName;
   } else {
-    mainBranchPath = `remotes/origin/${core.getInput("main_branch_name")}`;
+    mainBranchPath = `remotes/origin/${mainBranchName}`;
   }
 
   const mergeBaseExecOutput = await exec.getExecOutput("git", [
@@ -60,7 +65,8 @@ const getFileChangesInBranchAsync = async (
 };
 
 module.exports = {
-  generateGitStateAsync: async () => {
+  _getFileChangesInBranchAsync: getFileChangesInBranchAsync, // exposed for testing in isolation
+  generateGitStateAsync: async (mainBranchName) => {
     const gitState = {
       commitSha: "",
       branchName: "",
@@ -71,12 +77,52 @@ module.exports = {
     gitState.commitSha = await getCommitShaAsync();
     gitState.branchName = getBranchName();
     gitState.buildNumber = process.env.GITHUB_RUN_ID;
-    gitState.mainBranchForkPoint = await getMainBranchForkPointAsync();
+    gitState.mainBranchForkPoint = await getMainBranchForkPointAsync(mainBranchName);
     gitState.fileChangesInBranch = await getFileChangesInBranchAsync(
       gitState.mainBranchForkPoint,
       gitState.commitSha
     );
 
+    core.debug("Generated git state: ", gitState);
+
     return gitState;
   },
+
+  persistGitStateAsync: async (gitState) => {
+
+    // Write the git state to file:
+    await fs.promises.writeFile(
+      manifestGitStateKey,
+      JSON.stringify(gitState, null, 2)
+    );
+
+    if (
+      !(await artifactHandler.uploadArtifactAsync(
+        manifestGitStateKey,
+        manifestGitStateKey
+      ))
+    ) {
+      throw Error("Unable to upload git state artifact");
+    }
+  },
+
+  loadGitStateAsync: async () => {
+    await artifactHandler.downloadArtifactAsync(manifestGitStateKey);
+    const fileContents = await fs.promises.readFile(
+      manifestGitStateKey,
+      { encoding: "utf8" }
+    );
+    core.info("read git state contents: " + fileContents);
+
+    // gitState contains these fields:
+    // {
+    //   commitSha: '',
+    //   branchName: '',
+    //   buildNumber: '',
+    //   mainBranchForkPoint: '',
+    //   fileChangesInBranch: []
+    // };
+
+    return JSON.parse(fileContents);
+  }
 };

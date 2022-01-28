@@ -2,7 +2,7 @@ const core = require("@actions/core");
 const path = require("path");
 const docker = require("@eroad/gh-common/docker");
 
-const artifactHandler = require("@eroad/gh-common/artifact-handler");
+const git = require("@eroad/gh-common/git");
 const imageNamer = require("@eroad/gh-common/image-namer");
 const constants = require("@eroad/gh-common/constants");
 const manifest = require("@eroad/gh-common/manifest");
@@ -10,7 +10,7 @@ const manifest = require("@eroad/gh-common/manifest");
 module.exports = {
   build: async () => {
     try {
-      const gitState = await artifactHandler.loadGitStateAsync();
+      const gitState = await git.loadGitStateAsync();
 
       const imageName = core.getInput(constants.inputImageName);
       const fqImageName = imageNamer.loadFqImageName(imageName);
