@@ -5,7 +5,7 @@ const { expect } = require("@jest/globals");
 jest.mock("@actions/artifact");
 jest.mock("@actions/core");
 
-const { uploadArtifactAsync } = require("./uploader");
+const artifactHandler = require("./artifact-handler");
 
 describe("uploadArtifactAsync", () => {
   const key = "someUploadKey";
@@ -24,7 +24,7 @@ describe("uploadArtifactAsync", () => {
       failedItems: [],
     });
 
-    const result = await uploadArtifactAsync(key, path);
+    const result = await artifactHandler.uploadArtifactAsync(key, path);
 
     expect(result).toBeTruthy();
     expect(mockArtifactClient.uploadArtifact).toHaveBeenCalledTimes(1);
@@ -43,7 +43,7 @@ describe("uploadArtifactAsync", () => {
     mockArtifactClient.uploadArtifact.mockResolvedValue({
       failedItems: ["something"],
     });
-    const result = await uploadArtifactAsync(key, path);
+    const result = await artifactHandler.uploadArtifactAsync(key, path);
 
     expect(result).toBeFalsy();
     expect(core.setFailed).toHaveBeenCalledTimes(1);

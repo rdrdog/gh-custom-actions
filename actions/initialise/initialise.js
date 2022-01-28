@@ -1,30 +1,14 @@
-const fs = require("fs");
 const core = require("@actions/core");
-const git = require("./git");
-const uploader = require("./uploader");
+const git = require("@eroad/gh-common/git");
 
-const manifestGitStateKey = "manifest_git_state";
+const inputMainBranchName = "main_branch_name";
 
 const runAsync = async () => {
   try {
-    const gitState = await git.generateGitStateAsync();
+    const mainBranchName = core.getInput(inputMainBranchName);
 
-    core.debug("Generated git state: ", gitState);
-
-    // Write the git state to file:
-    await fs.promises.writeFile(
-      manifestGitStateKey,
-      JSON.stringify(gitState, null, 2)
-    );
-
-    if (
-      !(await uploader.uploadArtifactAsync(
-        manifestGitStateKey,
-        manifestGitStateKey
-      ))
-    ) {
-      throw Error("Unable to upload git state artifact");
-    }
+    const gitState = await git.generateGitStateAsync(mainBranchName);
+    await git.persistGitStateAsync(gitState);
   } catch (error) {
     core.setFailed(error.message);
   }

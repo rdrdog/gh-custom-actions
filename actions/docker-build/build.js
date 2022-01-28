@@ -2,7 +2,7 @@ const core = require("@actions/core");
 const path = require("path");
 const docker = require("@eroad/gh-common/docker");
 
-const artifactHandler = require("@eroad/gh-common/artifact-handler");
+const git = require("@eroad/gh-common/git");
 const imageNamer = require("@eroad/gh-common/image-namer");
 const constants = require("@eroad/gh-common/constants");
 const manifest = require("@eroad/gh-common/manifest");
@@ -10,7 +10,7 @@ const manifest = require("@eroad/gh-common/manifest");
 module.exports = {
   build: async () => {
     try {
-      const gitState = await artifactHandler.loadGitStateAsync();
+      const gitState = await git.loadGitStateAsync();
 
       const imageName = core.getInput(constants.inputImageName);
       const fqImageName = imageNamer.loadFqImageName(imageName);
@@ -22,7 +22,7 @@ module.exports = {
       // - TODO: determine if container should be build
 
       // - pull latest image for cache
-      if (process.env.ACT !== "true") {
+      if (constants.isCI()) {
         await docker.pullAsync(`${imageTag}:latest`);
       }
 
@@ -47,7 +47,7 @@ module.exports = {
         buildArgs
       );
 
-      if (process.env.ACT !== "true") {
+      if (constants.isCI()) {
         await docker.pushAsync(`${fqImageName}:${imageTag}`);
         await docker.pushAsync(`${fqImageName}:latest`);
       } else {

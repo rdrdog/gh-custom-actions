@@ -1,12 +1,11 @@
 const core = require("@actions/core");
-const path = require("path");
 const docker = require("@eroad/gh-common/docker");
-const artifactHandler = require("@eroad/gh-common/artifact-handler");
+const git = require("@eroad/gh-common/git");
 const imageNamer = require("@eroad/gh-common/image-namer");
 
 module.exports = {
   run: async () => {
-    const gitState = await artifactHandler.loadGitStateAsync();
+    const gitState = await git.loadGitStateAsync();
 
     const imageName = core.getInput("image_names");
     // loads manifest which is exported from manifest.js
@@ -15,6 +14,6 @@ module.exports = {
     const imageTag = imageNamer.generateImageTag(gitState);
 
     // loop here
-    await docker.runAsync(`${fqImageName}:${imageTag}`)
+    await docker.runAsync(`${fqImageName}:${imageTag}`);
   },
 };

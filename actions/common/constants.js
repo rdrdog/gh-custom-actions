@@ -8,5 +8,5 @@ module.exports = {
   inputIncludes: "includes",
   inputRegistry: "registry",
 
-  manifestGitStateKey: "manifest_git_state",
+  isCI: () => process.env.ACT !== "true",
 };

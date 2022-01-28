@@ -40,6 +40,10 @@ yarn dist
 
 # Local usage
 
+You can run the build and deploy pipelines locally!
+
+## Preparation
+
 > Because the released version of ACT doesn't yet support custom actions inside actions, we need to build ACT from source.
 
 In another folder, outside of this repo:
@@ -50,7 +54,14 @@ In another folder, outside of this repo:
    cd act
    make build
    ```
-1. using the binary created in the act repo (e.g. `~/code/act/dist/local/act`), run the github actions locally, specifying a temporary artifact path:
+1. the first time you run act, it will ask you to choose a docker image size. Choose `medium`.
+
+## Running the build-and-deploy pipeline
+
+If you're doing active development, you should know that the build-and-deploy.yml pipeline relies on the dist folder of the actions, so:
+
+1. Open a new terminal at the repo root and run `yarn run dist && yarn run build-watch`
+1. Now, using the binary created in the act repo (e.g. `~/code/act/dist/local/act`), run the github actions locally, specifying a temporary artifact path:
    ```
    ~/code/act/dist/local/act --artifact-server-path ./tmp -W .github/workflows/build-and-deploy.yml
    ```

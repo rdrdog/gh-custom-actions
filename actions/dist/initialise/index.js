@@ -2346,72 +2346,6 @@ var require_exec = __commonJS({
   }
 });
 
-// actions/initialise/git.js
-var require_git = __commonJS({
-  "actions/initialise/git.js"(exports, module2) {
-    var core = require_core();
-    var exec = require_exec();
-    var getCommitShaAsync = async () => {
-      const gitCommitShaOutput = await exec.getExecOutput("git", [
-        "rev-parse",
-        "HEAD"
-      ]);
-      return gitCommitShaOutput.stdout.trim();
-    };
-    var getBranchName = () => {
-      let branchName = process.env.GITHUB_HEAD_REF;
-      if (!branchName) {
-        branchName = `${process.env.GITHUB_REF}#refs/heads/`;
-      }
-      return branchName;
-    };
-    var getMainBranchForkPointAsync = async () => {
-      if (process.env.ACT === "true") {
-        mainBranchPath = core.getInput("main_branch_name");
-      } else {
-        mainBranchPath = `remotes/origin/${core.getInput("main_branch_name")}`;
-      }
-      const mergeBaseExecOutput = await exec.getExecOutput("git", [
-        "merge-base",
-        "--octopus",
-        mainBranchPath,
-        "HEAD"
-      ]);
-      return mergeBaseExecOutput.stdout.trim();
-    };
-    var getFileChangesInBranchAsync = async (originCommitSha, currentCommitSha) => {
-      if (!originCommitSha || !currentCommitSha) {
-        return [];
-      }
-      diffArgs = process.env.ACT === "true" ? ["--no-pager", "diff", "--name-only", `${originCommitSha}:./`] : [
-        "--no-pager",
-        "diff",
-        "--name-only",
-        `${originCommitSha}..${currentCommitSha}`
-      ];
-      fileChangesInBranchOutput = await exec.getExecOutput("git", diffArgs);
-      fileChangesInBranch = fileChangesInBranchOutput.stdout.trim();
-      return fileChangesInBranch.split("\n");
-    };
-    module2.exports = {
-      generateGitStateAsync: async () => {
-        const gitState = {
-          commitSha: "",
-          branchName: "",
-          mainBranchForkPoint: "",
-          fileChangesInBranch: []
-        };
-        gitState.commitSha = await getCommitShaAsync();
-        gitState.branchName = getBranchName();
-        gitState.buildNumber = process.env.GITHUB_RUN_ID;
-        gitState.mainBranchForkPoint = await getMainBranchForkPointAsync();
-        gitState.fileChangesInBranch = await getFileChangesInBranchAsync(gitState.mainBranchForkPoint, gitState.commitSha);
-        return gitState;
-      }
-    };
-  }
-});
-
 // node_modules/@actions/artifact/lib/internal/path-and-artifact-name-validation.js
 var require_path_and_artifact_name_validation = __commonJS({
   "node_modules/@actions/artifact/lib/internal/path-and-artifact-name-validation.js"(exports) {
@@ -6940,9 +6874,9 @@ var require_artifact_client2 = __commonJS({
   }
 });
 
-// actions/initialise/uploader.js
-var require_uploader = __commonJS({
-  "actions/initialise/uploader.js"(exports, module2) {
+// actions/common/artifact-handler.js
+var require_artifact_handler = __commonJS({
+  "actions/common/artifact-handler.js"(exports, module2) {
     var artifact = require_artifact_client2();
     var core = require_core();
     module2.exports = {
@@ -6959,6 +6893,116 @@ var require_uploader = __commonJS({
         }
         core.info(`Artifact ${uploadResponse.artifactName} has been successfully uploaded!`);
         return true;
+      },
+      downloadArtifactAsync: async (key) => {
+        const artifactClient = artifact.create();
+        const downloadOptions = {
+          createArtifactFolder: false
+        };
+        const downloadResponse = await artifactClient.downloadArtifact(key, "", downloadOptions);
+        core.info(`Artifact ${downloadResponse.artifactName} was downloaded to ${downloadResponse.downloadPath}`);
+      }
+    };
+  }
+});
+
+// actions/common/constants.js
+var require_constants = __commonJS({
+  "actions/common/constants.js"(exports, module2) {
+    module2.exports = {
+      buildArgContainerCommitSha: "COMMIT_SHA",
+      buildArgContainerBuildNumber: "BUILD_NUMBER",
+      inputImageName: "image_name",
+      inputDockerfile: "dockerfile",
+      inputContext: "context",
+      inputIncludes: "includes",
+      inputRegistry: "registry",
+      isCI: () => process.env.ACT !== "true"
+    };
+  }
+});
+
+// actions/common/git.js
+var require_git = __commonJS({
+  "actions/common/git.js"(exports, module2) {
+    var core = require_core();
+    var exec = require_exec();
+    var fs = require("fs");
+    var artifactHandler = require_artifact_handler();
+    var constants = require_constants();
+    var manifestGitStateKey = "manifest_git_state";
+    var getCommitShaAsync = async () => {
+      const gitCommitShaOutput = await exec.getExecOutput("git", [
+        "rev-parse",
+        "HEAD"
+      ]);
+      return gitCommitShaOutput.stdout.trim();
+    };
+    var getBranchName = () => {
+      let branchName = process.env.GITHUB_HEAD_REF;
+      if (!branchName) {
+        branchName = `${process.env.GITHUB_REF}#refs/heads/`;
+      }
+      return branchName;
+    };
+    var getMainBranchForkPointAsync = async (mainBranchName) => {
+      if (constants.isCI()) {
+        mainBranchPath = `remotes/origin/${mainBranchName}`;
+      } else {
+        mainBranchPath = mainBranchName;
+      }
+      const mergeBaseExecOutput = await exec.getExecOutput("git", [
+        "merge-base",
+        "--octopus",
+        mainBranchPath,
+        "HEAD"
+      ]);
+      return mergeBaseExecOutput.stdout.trim();
+    };
+    var getFileChangesInBranchAsync = async (originCommitSha, currentCommitSha) => {
+      if (!originCommitSha || !currentCommitSha) {
+        return [];
+      }
+      diffArgs = constants.isCI() ? [
+        "--no-pager",
+        "diff",
+        "--name-only",
+        `${originCommitSha}..${currentCommitSha}`
+      ] : ["--no-pager", "diff", "--name-only", `${originCommitSha}:./`];
+      fileChangesInBranchOutput = await exec.getExecOutput("git", diffArgs);
+      fileChangesInBranch = fileChangesInBranchOutput.stdout.trim();
+      return fileChangesInBranch.split("\n");
+    };
+    module2.exports = {
+      _getFileChangesInBranchAsync: getFileChangesInBranchAsync,
+      generateGitStateAsync: async (mainBranchName) => {
+        const gitState = {
+          commitSha: "",
+          branchName: "",
+          mainBranchForkPoint: "",
+          fileChangesInBranch: []
+        };
+        gitState.commitSha = await getCommitShaAsync();
+        gitState.branchName = getBranchName();
+        gitState.buildNumber = process.env.GITHUB_RUN_ID;
+        gitState.mainBranchForkPoint = await getMainBranchForkPointAsync(mainBranchName);
+        gitState.fileChangesInBranch = await getFileChangesInBranchAsync(gitState.mainBranchForkPoint, gitState.commitSha);
+        core.debug("Generated git state: ", gitState);
+        return gitState;
+      },
+      persistGitStateAsync: async (gitState) => {
+        await fs.promises.writeFile(manifestGitStateKey, JSON.stringify(gitState, null, 2));
+        if (!await artifactHandler.uploadArtifactAsync(manifestGitStateKey, manifestGitStateKey)) {
+          throw Error("Unable to upload git state artifact");
+        }
+      },
+      loadGitStateAsync: async () => {
+        await artifactHandler.downloadArtifactAsync(manifestGitStateKey);
+        const fileContents = await fs.promises.readFile(manifestGitStateKey, {
+          encoding: "utf8"
+        });
+        core.info("read git state contents: " + fileContents);
+        return JSON.parse(fileContents);
       }
     };
   }
@@ -6967,19 +7011,14 @@ var require_uploader = __commonJS({
 // actions/initialise/initialise.js
 var require_initialise = __commonJS({
   "actions/initialise/initialise.js"(exports, module2) {
-    var fs = require("fs");
     var core = require_core();
     var git = require_git();
-    var uploader = require_uploader();
-    var manifestGitStateKey = "manifest_git_state";
+    var inputMainBranchName = "main_branch_name";
     var runAsync2 = async () => {
       try {
-        const gitState = await git.generateGitStateAsync();
-        core.debug("Generated git state: ", gitState);
-        await fs.promises.writeFile(manifestGitStateKey, JSON.stringify(gitState, null, 2));
-        if (!await uploader.uploadArtifactAsync(manifestGitStateKey, manifestGitStateKey)) {
-          throw Error("Unable to upload git state artifact");
-        }
+        const mainBranchName = core.getInput(inputMainBranchName);
+        const gitState = await git.generateGitStateAsync(mainBranchName);
+        await git.persistGitStateAsync(gitState);
       } catch (error) {
         core.setFailed(error.message);
       }

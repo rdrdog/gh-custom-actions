@@ -21,12 +21,10 @@ jest.mock("fs", () => {
 const manifest = require("./manifest");
 
 describe("getImageNameAndTagAsync", () => {
-
   const imageName = "api";
 
   beforeEach(() => {
     jest.resetAllMocks();
-
   });
 
   it("downloads the manifest images artifacts only one time", async () => {
@@ -34,7 +32,9 @@ describe("getImageNameAndTagAsync", () => {
     await manifest.getImageNameAndTagAsync(imageName);
 
     expect(artifactHandler.downloadArtifactAsync).toHaveBeenCalledTimes(1);
-    expect(artifactHandler.downloadArtifactAsync).toHaveBeenCalledWith('manifest_images');
+    expect(artifactHandler.downloadArtifactAsync).toHaveBeenCalledWith(
+      "manifest_images"
+    );
   });
 
   it("reads and returns the contents of the named image file", async () => {
@@ -45,25 +45,21 @@ describe("getImageNameAndTagAsync", () => {
     const result = await manifest.getImageNameAndTagAsync(imageName);
 
     expect(fs.promises.readFile).toHaveBeenCalledTimes(1);
-    expect(fs.promises.readFile).toHaveBeenCalledWith(imageName, { 'encoding': 'utf8' });
+    expect(fs.promises.readFile).toHaveBeenCalledWith(imageName, {
+      encoding: "utf8",
+    });
 
     expect(result).toBe(imageNameAndTag);
   });
 
   it("throws an exception if no file exists for the specified image name", async () => {
-
     fs.promises.readFile.mockRejectedValue(new Error());
 
-    await expect(manifest.getImageNameAndTagAsync(imageName))
-      .rejects
-      .toThrow();
-
+    await expect(manifest.getImageNameAndTagAsync(imageName)).rejects.toThrow();
   });
-
 });
 
 describe("storeImageNameAndTagAsync", () => {
-
   const imageName = "api";
   const fqImageName = "ecr.example.org/example/api";
   const imageTag = "abc123de";
@@ -73,19 +69,22 @@ describe("storeImageNameAndTagAsync", () => {
   });
 
   it("writes the image details to file", async () => {
-
     await manifest.storeImageNameAndTagAsync(imageName, fqImageName, imageTag);
 
     expect(fs.promises.writeFile).toHaveBeenCalledTimes(1);
-    expect(fs.promises.writeFile).toHaveBeenCalledWith(imageName, `${fqImageName}:${imageTag}`);
+    expect(fs.promises.writeFile).toHaveBeenCalledWith(
+      imageName,
+      `${fqImageName}:${imageTag}`
+    );
   });
 
   it("uploads the image file", async () => {
-
     await manifest.storeImageNameAndTagAsync(imageName, fqImageName, imageTag);
 
     expect(artifactHandler.uploadArtifactAsync).toHaveBeenCalledTimes(1);
-    expect(artifactHandler.uploadArtifactAsync).toHaveBeenCalledWith('manifest_images', imageName);
+    expect(artifactHandler.uploadArtifactAsync).toHaveBeenCalledWith(
+      "manifest_images",
+      imageName
+    );
   });
-
 });
