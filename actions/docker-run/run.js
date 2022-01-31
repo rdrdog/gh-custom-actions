@@ -9,8 +9,6 @@ module.exports = {
 
     const imageNames = core.getInput("image_names");
     const arrImageNames = imageNames.split(",");
-    // loads manifest which is exported from manifest.js
-    const environment = core.getInput("environment");
 
     arrImageNames.forEach(async (imageName) => {
       const fqImageNameAndTag = await manifest.getImageNameAndTagAsync(imageName);
