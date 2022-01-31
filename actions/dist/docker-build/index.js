@@ -7164,7 +7164,7 @@ var require_build = __commonJS({
           core.info("FQImageName: " + fqImageName);
           core.info("imageTag: " + imageTag);
           if (constants.isCI()) {
-            await docker.pullAsync(`${imageTag}:latest`);
+            await docker.pullAsync(`${fqImageName}:latest`);
           }
           const buildArgs = [
             `${constants.buildArgContainerBuildNumber}="${gitState.buildNumber}"`,

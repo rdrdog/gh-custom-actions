@@ -17,7 +17,6 @@ module.exports = {
       const imageName = core.getInput(inputImageName);
 
       const gitState = await git.loadGitStateAsync();
-
       const fqImageName = imageNamer.loadFqImageName(imageName);
       const imageTag = imageNamer.generateImageTag(gitState);
 
@@ -28,7 +27,7 @@ module.exports = {
 
       // - pull latest image for cache
       if (constants.isCI()) {
-        await docker.pullAsync(`${imageTag}:latest`);
+        await docker.pullAsync(`${fqImageName}:latest`);
       }
 
       // generate our build args:
