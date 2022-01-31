@@ -99,7 +99,7 @@ jobs:
     # ---------------------------------------------------------
 
     - name: run infra
-      uses: ./.github/workflows/composite/docker-run
+      uses: ./actions/dist/docker-run
       with:
         image_names: infra
         environment: localk8s

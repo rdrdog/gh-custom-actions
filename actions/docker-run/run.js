@@ -7,13 +7,16 @@ module.exports = {
   run: async () => {
     const gitState = await git.loadGitStateAsync();
 
-    const imageName = core.getInput("image_names");
+    const imageNames = core.getInput("image_names");
+    const arrImageNames = imageNames.split(",");
     // loads manifest which is exported from manifest.js
     const environment = core.getInput("environment");
-    const fqImageName = imageNamer.loadFqImageName(imageName);
-    const imageTag = imageNamer.generateImageTag(gitState);
 
-    // loop here
-    await docker.runAsync(`${fqImageName}:${imageTag}`);
+    arrImageNames.forEach(async () => {
+      const fqImageName = imageNamer.loadFqImageName(imageName);
+      const imageTag = imageNamer.generateImageTag(gitState);
+
+      await docker.runAsync(`${fqImageName}:${imageTag}`);
+    })
   },
 };

@@ -1,0 +1,15 @@
+name: "Docker Run"
+description: "Runs a container image"
+
+inputs:
+  image_names:
+    description: "The name of the image to build e.g. cool-api"
+    required: true
+
+  environment:
+    description: "The name of the environment."
+    required: true
+
+runs:
+  using: "node16"
+  main: "index.js"
