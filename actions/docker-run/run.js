@@ -1,7 +1,7 @@
 const core = require("@actions/core");
 const docker = require("@eroad/gh-common/docker");
 const git = require("@eroad/gh-common/git");
-const imageNamer = require("@eroad/gh-common/image-namer");
+const manifest = require("@eroad/gh-common/manifest");
 
 module.exports = {
   run: async () => {
@@ -12,11 +12,10 @@ module.exports = {
     // loads manifest which is exported from manifest.js
     const environment = core.getInput("environment");
 
-    arrImageNames.forEach(async () => {
-      const fqImageName = imageNamer.loadFqImageName(imageName);
-      const imageTag = imageNamer.generateImageTag(gitState);
-
-      await docker.runAsync(`${fqImageName}:${imageTag}`);
-    })
+    arrImageNames.forEach(async (imageName) => {
+      const fqImageNameAndTag = await manifest.getImageNameAndTagAsync(imageName);
+      core.info(`Running docker image ${fqImageNameAndTag}`);
+      await docker.runAsync(`${fqImageNameAndTag}`);
+    });
   },
 };

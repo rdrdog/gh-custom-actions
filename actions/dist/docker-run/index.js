@@ -7084,34 +7084,27 @@ var require_git = __commonJS({
   }
 });
 
-// actions/common/image-namer.js
-var require_image_namer = __commonJS({
-  "actions/common/image-namer.js"(exports, module2) {
+// actions/common/manifest.js
+var require_manifest = __commonJS({
+  "actions/common/manifest.js"(exports, module2) {
     var core = require_core();
-    var constants = require_constants();
-    module2.exports = {
-      loadFqImageName: (registry, imageName) => {
-        if (!process.env.STACK_NAME) {
-          throw new Error("STACK_NAME env var must be defined for generating container image names");
-        }
-        registry = registry.trim();
-        if (registry != "" && !registry.endsWith("/")) {
-          registry += "/";
-        }
-        if (!constants.isCI()) {
-          core.info("Setting container registry to empty string for local container builds");
-          registry = "";
-        }
-        return `${registry}${process.env.STACK_NAME}/${imageName}`;
-      },
-      generateImageTag: (gitState) => {
-        let imageTag = gitState.commitSha.substring(0, 7);
-        if (!constants.isCI()) {
-          core.info("Adding unix epoch to image tag for local builds");
-          imageTag += "-" + new Date().getTime();
-        }
-        return imageTag;
+    var fs = require("fs");
+    var artifactHandler = require_artifact_handler();
+    var manifestImagesKey = "manifest_images";
+    var getImageNameAndTagAsync = async (imageName) => {
+      if (!getImageNameAndTagAsync._hasDownloaded) {
+        await artifactHandler.downloadArtifactAsync(manifestImagesKey);
+        getImageNameAndTagAsync._hasDownloaded = true;
       }
+      return await fs.promises.readFile(imageName, { encoding: "utf8" });
+    };
+    var storeImageNameAndTagAsync = async (imageName, fqImageName, imageTag) => {
+      await fs.promises.writeFile(imageName, `${fqImageName}:${imageTag}`);
+      await artifactHandler.uploadArtifactAsync(manifestImagesKey, imageName);
+    };
+    module2.exports = {
+      getImageNameAndTagAsync,
+      storeImageNameAndTagAsync
     };
   }
 });
@@ -7122,15 +7115,18 @@ var require_run = __commonJS({
     var core = require_core();
     var docker = require_docker();
     var git = require_git();
-    var imageNamer = require_image_namer();
+    var manifest = require_manifest();
     module2.exports = {
       run: async () => {
         const gitState = await git.loadGitStateAsync();
-        const imageName = core.getInput("image_names");
+        const imageNames = core.getInput("image_names");
+        const arrImageNames = imageNames.split(",");
         const environment = core.getInput("environment");
-        const fqImageName = imageNamer.loadFqImageName(imageName);
-        const imageTag = imageNamer.generateImageTag(gitState);
-        await docker.runAsync(`${fqImageName}:${imageTag}`);
+        arrImageNames.forEach(async (imageName) => {
+          const fqImageNameAndTag = await manifest.getImageNameAndTagAsync(imageName);
+          core.info(`Running docker image ${fqImageNameAndTag}`);
+          await docker.runAsync(`${fqImageNameAndTag}`);
+        });
       }
     };
   }
