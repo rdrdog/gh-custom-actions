@@ -7,18 +7,18 @@ const imageNamer = require("@eroad/gh-common/image-namer");
 const constants = require("@eroad/gh-common/constants");
 const manifest = require("@eroad/gh-common/manifest");
 
-const inputRegistry = "registry";
 const inputImageName = "image_name";
+const inputDockerfile = "dockerfile";
+const inputContext = "context";
 
 module.exports = {
   build: async () => {
     try {
       const imageName = core.getInput(inputImageName);
-      const registry = core.getInput(inputRegistry);
 
       const gitState = await git.loadGitStateAsync();
 
-      const fqImageName = imageNamer.loadFqImageName(registry, imageName);
+      const fqImageName = imageNamer.loadFqImageName(imageName);
       const imageTag = imageNamer.generateImageTag(gitState);
 
       core.info("FQImageName: " + fqImageName);
@@ -38,8 +38,8 @@ module.exports = {
       ];
 
       // determine our build context:
-      const dockerfilePath = core.getInput(constants.inputDockerfile);
-      let contextPath = core.getInput(constants.inputContext);
+      const dockerfilePath = core.getInput(inputDockerfile);
+      let contextPath = core.getInput(inputContext);
       if (!contextPath) {
         contextPath = path.dirname(dockerfilePath);
       }

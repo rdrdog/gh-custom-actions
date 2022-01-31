@@ -6912,9 +6912,6 @@ var require_constants = __commonJS({
     module2.exports = {
       buildArgContainerCommitSha: "COMMIT_SHA",
       buildArgContainerBuildNumber: "BUILD_NUMBER",
-      inputDockerfile: "dockerfile",
-      inputContext: "context",
-      inputIncludes: "includes",
       isCI: () => process.env.ACT !== "true"
     };
   }
