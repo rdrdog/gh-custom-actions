@@ -7122,7 +7122,6 @@ var require_run = __commonJS({
         const arrImageNames = imageNames.split(",");
         arrImageNames.forEach(async (imageName) => {
           const fqImageNameAndTag = await manifest.getImageNameAndTagAsync(imageName);
-          core.info(`Running docker image ${fqImageNameAndTag}`);
           await docker.runAsync(`${fqImageNameAndTag}`);
         });
       }

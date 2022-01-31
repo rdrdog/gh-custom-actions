@@ -10,8 +10,7 @@ module.exports = {
 
     arrImageNames.forEach(async (imageName) => {
       const fqImageNameAndTag = await manifest.getImageNameAndTagAsync(imageName);
-      core.info(`Running docker image ${fqImageNameAndTag}`);
-      await docker.runAsync(`${fqImageNameAndTag}`);
+      await docker.runAsync(fqImageNameAndTag);
     });
   },
 };

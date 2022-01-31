@@ -18,7 +18,6 @@ describe("docker run", () => {
         jest.resetAllMocks();
         core.getInput.mockReturnValue(imageNames);
         manifest.getImageNameAndTagAsync.mockResolvedValue(fqImageNameAndTag);
-        //docker.runAsync.mockResolvedValue(1);
     });
 
     it("runs the docker container", async () => {
@@ -27,8 +26,7 @@ describe("docker run", () => {
         expect(manifest.getImageNameAndTagAsync).toHaveBeenCalledWith(
             "infra"
         );
-        manifest.getImageNameAndTagAsync(imageName).then(data => {
-            expect(data).toBe(fqImageNameAndTag)
-        })
+        expect(docker.runAsync).toHaveBeenCalledTimes(1);
+        expect(docker.runAsync).toHaveBeenCalledWith(fqImageNameAndTag);
     });
 });
