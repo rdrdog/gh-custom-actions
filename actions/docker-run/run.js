@@ -5,8 +5,6 @@ const manifest = require("@eroad/gh-common/manifest");
 
 module.exports = {
   run: async () => {
-    const gitState = await git.loadGitStateAsync();
-
     const imageNames = core.getInput("image_names");
     const arrImageNames = imageNames.split(",");
 

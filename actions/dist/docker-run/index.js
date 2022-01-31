@@ -7118,10 +7118,8 @@ var require_run = __commonJS({
     var manifest = require_manifest();
     module2.exports = {
       run: async () => {
-        const gitState = await git.loadGitStateAsync();
         const imageNames = core.getInput("image_names");
         const arrImageNames = imageNames.split(",");
-        const environment = core.getInput("environment");
         arrImageNames.forEach(async (imageName) => {
           const fqImageNameAndTag = await manifest.getImageNameAndTagAsync(imageName);
           core.info(`Running docker image ${fqImageNameAndTag}`);
