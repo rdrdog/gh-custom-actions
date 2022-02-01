@@ -20,13 +20,17 @@ describe("docker run", () => {
         manifest.getImageNameAndTagAsync.mockResolvedValue(fqImageNameAndTag);
     });
 
-    it("runs the docker container", async () => {
+    it("runs a docker container", async () => {
         await run();
         expect(manifest.getImageNameAndTagAsync).toHaveBeenCalledTimes(1);
-        expect(manifest.getImageNameAndTagAsync).toHaveBeenCalledWith(
-            "infra"
-        );
+        expect(manifest.getImageNameAndTagAsync).toHaveBeenCalledWith(imageName);
         expect(docker.runAsync).toHaveBeenCalledTimes(1);
         expect(docker.runAsync).toHaveBeenCalledWith(fqImageNameAndTag);
+    });
+    it("runs multiple docker containers", async () => {
+        const multipleImages = "infra,api"
+        core.getInput.mockReturnValue(multipleImages);
+        await run();
+        expect(manifest.getImageNameAndTagAsync).toHaveBeenCalledTimes(2);
     });
 });
