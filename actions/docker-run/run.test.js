@@ -27,6 +27,7 @@ describe("docker run", () => {
         expect(docker.runAsync).toHaveBeenCalledTimes(1);
         expect(docker.runAsync).toHaveBeenCalledWith(fqImageNameAndTag);
     });
+
     it("runs multiple docker containers", async () => {
         const multipleImages = "infra,api,  backend"
         const arrMultipleImages = multipleImages.split(",")
