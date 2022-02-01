@@ -13,40 +13,40 @@ describe("loadFqImageName", () => {
     jest.resetAllMocks();
     constants.isCI.mockReturnValue(true);
     process.env.STACK_NAME = stackName;
+    process.env.REGISTRY = "ecr.example.org";
   });
 
   afterEach(() => {
     process.env.STACK_NAME = "";
   });
 
+  it("throws an error if REGISTRY is not defined", () => {
+    process.env.REGISTRY = "";
+
+    expect(() => imageNamer.loadFqImageName(imageName)).toThrow();
+  });
+
   it("throws an error if STACK_NAME is not defined", () => {
     process.env.STACK_NAME = "";
 
-    expect(() =>
-      imageNamer.loadFqImageName("ecr.example.org", imageName)
-    ).toThrow();
+    expect(() => imageNamer.loadFqImageName(imageName)).toThrow();
   });
 
   it("trims and adds a trailing slash to the registry name if required", () => {
     const expected = "ecr.example.org/example/api";
 
-    expect(imageNamer.loadFqImageName("ecr.example.org  ", imageName)).toBe(
-      expected
-    );
-    expect(imageNamer.loadFqImageName("ecr.example.org", imageName)).toBe(
-      expected
-    );
-    expect(imageNamer.loadFqImageName("ecr.example.org/", imageName)).toBe(
-      expected
-    );
+    process.env.REGISTRY = "ecr.example.org  ";
+    expect(imageNamer.loadFqImageName(imageName)).toBe(expected);
+    process.env.REGISTRY = "ecr.example.org";
+    expect(imageNamer.loadFqImageName(imageName)).toBe(expected);
+    process.env.REGISTRY = "ecr.example.org/";
+    expect(imageNamer.loadFqImageName(imageName)).toBe(expected);
   });
 
   it("sets the registry component to an empty string for local", () => {
     constants.isCI.mockReturnValue(false);
 
-    expect(imageNamer.loadFqImageName("ecr.example.org", imageName)).toBe(
-      "example/api"
-    );
+    expect(imageNamer.loadFqImageName(imageName)).toBe("example/api");
   });
 });
 

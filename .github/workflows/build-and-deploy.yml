@@ -16,6 +16,8 @@ env:
   # - namespace container image names (e.g. STACK_NAME/api),
   # - identifying secret storage instances (e.g. d-aue-STACK_NAME-kv),
   STACK_NAME: example
+  # Registry is the container registry our containers are being pushed/pulled.
+  REGISTRY: ecr.example.org
 
 jobs:
   initialise:
