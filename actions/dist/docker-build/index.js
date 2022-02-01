@@ -6990,9 +6990,6 @@ var require_constants = __commonJS({
     module2.exports = {
       buildArgContainerCommitSha: "COMMIT_SHA",
       buildArgContainerBuildNumber: "BUILD_NUMBER",
-      inputDockerfile: "dockerfile",
-      inputContext: "context",
-      inputIncludes: "includes",
       isCI: () => process.env.ACT !== "true"
     };
   }
@@ -7090,11 +7087,14 @@ var require_image_namer = __commonJS({
     var core = require_core();
     var constants = require_constants();
     module2.exports = {
-      loadFqImageName: (registry, imageName) => {
+      loadFqImageName: (imageName) => {
+        if (!process.env.REGISTRY) {
+          throw new Error("REGISTRY env var must be defined for generating container image names");
+        }
         if (!process.env.STACK_NAME) {
           throw new Error("STACK_NAME env var must be defined for generating container image names");
         }
-        registry = registry.trim();
+        registry = process.env.REGISTRY.trim();
         if (registry != "" && !registry.endsWith("/")) {
           registry += "/";
         }
@@ -7151,27 +7151,27 @@ var require_build = __commonJS({
     var imageNamer = require_image_namer();
     var constants = require_constants();
     var manifest = require_manifest();
-    var inputRegistry = "registry";
     var inputImageName = "image_name";
+    var inputDockerfile = "dockerfile";
+    var inputContext = "context";
     module2.exports = {
       build: async () => {
         try {
           const imageName = core.getInput(inputImageName);
-          const registry = core.getInput(inputRegistry);
           const gitState = await git.loadGitStateAsync();
-          const fqImageName = imageNamer.loadFqImageName(registry, imageName);
+          const fqImageName = imageNamer.loadFqImageName(imageName);
           const imageTag = imageNamer.generateImageTag(gitState);
           core.info("FQImageName: " + fqImageName);
           core.info("imageTag: " + imageTag);
           if (constants.isCI()) {
-            await docker.pullAsync(`${imageTag}:latest`);
+            await docker.pullAsync(`${fqImageName}:latest`);
           }
           const buildArgs = [
             `${constants.buildArgContainerBuildNumber}="${gitState.buildNumber}"`,
             `${constants.buildArgContainerCommitSha}="${gitState.commitSha}"`
           ];
-          const dockerfilePath = core.getInput(constants.inputDockerfile);
-          let contextPath = core.getInput(constants.inputContext);
+          const dockerfilePath = core.getInput(inputDockerfile);
+          let contextPath = core.getInput(inputContext);
           if (!contextPath) {
             contextPath = path.dirname(dockerfilePath);
           }

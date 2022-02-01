@@ -6990,9 +6990,6 @@ var require_constants = __commonJS({
     module2.exports = {
       buildArgContainerCommitSha: "COMMIT_SHA",
       buildArgContainerBuildNumber: "BUILD_NUMBER",
-      inputDockerfile: "dockerfile",
-      inputContext: "context",
-      inputIncludes: "includes",
       isCI: () => process.env.ACT !== "true"
     };
   }
@@ -7119,11 +7116,12 @@ var require_run = __commonJS({
     module2.exports = {
       run: async () => {
         const imageNames = core.getInput("image_names");
-        const arrImageNames = imageNames.split(",");
-        arrImageNames.forEach(async (imageName) => {
-          const fqImageNameAndTag = await manifest.getImageNameAndTagAsync(imageName);
+        const arrImageNames = imageNames.split(",").map((x) => x.trim());
+        for (let i = 0; i < arrImageNames.length; i++) {
+          const fqImageNameAndTag = await manifest.getImageNameAndTagAsync(arrImageNames[i]);
           await docker.runAsync(fqImageNameAndTag);
-        });
+        }
+        ;
       }
     };
   }
