@@ -28,9 +28,13 @@ describe("docker run", () => {
         expect(docker.runAsync).toHaveBeenCalledWith(fqImageNameAndTag);
     });
     it("runs multiple docker containers", async () => {
-        const multipleImages = "infra,api"
+        const multipleImages = "infra,api,  backend"
+        const arrMultipleImages = multipleImages.split(",")
         core.getInput.mockReturnValue(multipleImages);
         await run();
-        expect(manifest.getImageNameAndTagAsync).toHaveBeenCalledTimes(2);
+        expect(manifest.getImageNameAndTagAsync).toHaveBeenCalledTimes(3);
+        expect(manifest.getImageNameAndTagAsync).toHaveBeenCalledWith(arrMultipleImages[0].trim());
+        expect(manifest.getImageNameAndTagAsync).toHaveBeenCalledWith(arrMultipleImages[1].trim());
+        expect(manifest.getImageNameAndTagAsync).toHaveBeenCalledWith(arrMultipleImages[2].trim());
     });
 });
