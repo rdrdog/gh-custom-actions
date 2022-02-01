@@ -18,11 +18,6 @@ inputs:
     description: "A semicolon delimited list of glob patterns of paths. If the git diff for the current branch indicates any files on these paths have changed, the container will be built."
     required: true
 
-  registry:
-    description: "The URL of the container registry"
-    required: false
-    default: "ecr.todo.example.org"
-
 runs:
   using: "node16"
   main: "index.js"
