@@ -18,15 +18,15 @@ describe("build", () => {
   const gitState = {
     branchName: "main",
     buildNumber: "123",
-    commitSha: "defabc123"
+    commitSha: "defabc123",
   };
   const fqImageName = "ecr.example.org/example/api";
-  const imageTag = "abcdef12"
+  const imageTag = "abcdef12";
   const inputs = {
-    "registry": "ecr.example.org",
-    "image_name": "api",
-    "dockerfile": "./src/api/Dockerfile",
-    "context": "./src/"
+    registry: "ecr.example.org",
+    image_name: "api",
+    dockerfile: "./src/api/Dockerfile",
+    context: "./src/",
   };
 
   beforeEach(() => {
@@ -42,7 +42,6 @@ describe("build", () => {
   });
 
   it("pulls the latest image when running in CI", async () => {
-
     constants.isCI.mockReturnValue(false);
     await build();
     expect(docker.pullAsync).toHaveBeenCalledTimes(0);
@@ -51,17 +50,15 @@ describe("build", () => {
     await build();
     expect(docker.pullAsync).toHaveBeenCalledTimes(1);
     expect(docker.pullAsync).toHaveBeenCalledWith(`${fqImageName}:latest`);
-
   });
 
-  describe('docker build', () => {
+  describe("docker build", () => {
     const expectedBuildArgs = [
       `BUILD_NUMBER="${gitState.buildNumber}"`,
       `COMMIT_SHA="${gitState.commitSha}"`,
     ];
 
     it("runs docker build with expected parameters", async () => {
-
       await build();
 
       expect(docker.buildAsync).toHaveBeenCalledTimes(1);
@@ -75,26 +72,22 @@ describe("build", () => {
     });
 
     it("defaults the context path to the folder of the dockerfile", async () => {
-
-      inputs.context = '';
+      inputs.context = "";
 
       await build();
 
       expect(docker.buildAsync).toHaveBeenCalledTimes(1);
       expect(docker.buildAsync).toHaveBeenCalledWith(
         inputs.dockerfile,
-        './src/api',
+        "./src/api",
         fqImageName,
         imageTag,
         expectedBuildArgs
       );
-
     });
-
   });
 
   it("pushes the images when running in CI", async () => {
-
     constants.isCI.mockReturnValue(false);
     await build();
     expect(docker.pushAsync).toHaveBeenCalledTimes(0);
@@ -104,11 +97,9 @@ describe("build", () => {
     expect(docker.pushAsync).toHaveBeenCalledTimes(2);
     expect(docker.pushAsync).toHaveBeenCalledWith(`${fqImageName}:${imageTag}`);
     expect(docker.pushAsync).toHaveBeenCalledWith(`${fqImageName}:latest`);
-
   });
 
   it("stores the image name and tag in the manifest", async () => {
-
     await build();
 
     expect(manifest.storeImageNameAndTagAsync).toHaveBeenCalledTimes(1);
@@ -117,7 +108,5 @@ describe("build", () => {
       fqImageName,
       imageTag
     );
-
   });
-
 });

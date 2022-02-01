@@ -23,17 +23,13 @@ describe("loadFqImageName", () => {
   it("throws an error if REGISTRY is not defined", () => {
     process.env.REGISTRY = "";
 
-    expect(() =>
-      imageNamer.loadFqImageName(imageName)
-    ).toThrow();
+    expect(() => imageNamer.loadFqImageName(imageName)).toThrow();
   });
 
   it("throws an error if STACK_NAME is not defined", () => {
     process.env.STACK_NAME = "";
 
-    expect(() =>
-      imageNamer.loadFqImageName(imageName)
-    ).toThrow();
+    expect(() => imageNamer.loadFqImageName(imageName)).toThrow();
   });
 
   it("trims and adds a trailing slash to the registry name if required", () => {
@@ -50,9 +46,7 @@ describe("loadFqImageName", () => {
   it("sets the registry component to an empty string for local", () => {
     constants.isCI.mockReturnValue(false);
 
-    expect(imageNamer.loadFqImageName(imageName)).toBe(
-      "example/api"
-    );
+    expect(imageNamer.loadFqImageName(imageName)).toBe("example/api");
   });
 });
 
